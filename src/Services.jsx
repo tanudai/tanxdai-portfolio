@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ServiceDemo } from './AppDetails.jsx';
-import { spring } from './motion.js';
+import { duration, ease, spring } from './motion.js';
 import Icon from './Icons.jsx';
 
 const groups = ['AI & automation', 'Websites', 'Audits & advisory'];
@@ -44,18 +44,28 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   const filtered = services.filter(service => filter === 'All' || service[0] === filter);
   const perPage = shortPhone ? 2 : compact ? 4 : 6;
   const pages = Math.ceil(filtered.length / perPage);
-  const close = () => { dialog.current.close(); setSelected(null); opener.current?.focus(); };
+  // The card flies from its tile into the dialog and back: the dialog stays open until the return flight lands.
+  const close = () => setSelected(null);
+  useEffect(() => { if (selected && !dialog.current.open) dialog.current.showModal(); }, [selected]);
+  const landed = () => { dialog.current?.close(); opener.current?.focus(); };
   return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`}>
     <div className="services-heading"><div><span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1></div><p>Development, AI integrations, and technical advice.</p></div>
     <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
-    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page}>{filtered.slice(page * perPage, (page + 1) * perPage).map(service => <motion.button key={service[1]} className="service-tile" layoutId={`service-${service[1]}`} whileHover={reducedMotion ? undefined : { y: -4, rotate: -0.35, scale: 1.008 }} whileTap={{ scale: 0.98 }} onClick={event => { opener.current = event.currentTarget; setSelected(service); dialog.current.showModal(); }}>
+    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page}>{filtered.slice(page * perPage, (page + 1) * perPage).map(service => <motion.button key={service[1]} className="service-tile" layoutId={`service-${service[1]}`} whileHover={reducedMotion ? undefined : { y: -4, rotate: -0.35, scale: 1.008 }} whileTap={{ scale: 0.98 }} style={{ borderRadius: 16 }} transition={spring.sheet} onClick={event => { opener.current = event.currentTarget; setSelected(service); }}>
       <span className="service-number">{service[1]}</span><ServiceDemo id={service[1]} /><span className="service-category">{service[0]}</span><h2>{service[2]}</h2><p>{service[3]}</p><span className="tile-open">Explore service <span>+</span></span>
     </motion.button>)}</motion.div>
     <div className="service-pagination"><span>{filtered.length} services</span><div><button aria-label="Previous services" disabled={page === 0} onClick={() => setPage(value => value - 1)}><Icon name="arrowLeft" /></button><span aria-live="polite">{page + 1} / {pages}</span><button aria-label="Next services" disabled={page === pages - 1} onClick={() => setPage(value => value + 1)}><Icon name="arrowRight" /></button></div></div>
-    <dialog ref={dialog} className="service-dialog" onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === dialog.current) close(); }}>
-      {selected && <motion.div className="service-expanded" layoutId={compact ? undefined : `service-${selected[1]}`} initial={compact ? { y: 80, opacity: 0 } : false} animate={{ y: 0, opacity: 1 }} transition={spring.sheet}>
-        <span className="sheet-handle" aria-hidden="true"/><button className="service-close" aria-label="Close service" onClick={close}><Icon name="close" /></button><span className="service-category">{selected[0]} / {selected[1]}</span><h2>{selected[2]}</h2><p className="service-description">{selected[4]}</p><span className="goal-label">WHAT WE CAN WORK ON</span><ul>{selected[5].map(item => <li key={item}>{item}</li>)}</ul><div className="service-call"><span>Tell me what you need.<br />We’ll discuss scope and next steps.</span><button className="visit-website" onClick={() => { const name = selected[2]; close(); onCall(name); }}>Get on a call <Icon name="arrowUpRight" /></button></div>
-      </motion.div>}
+    <dialog ref={dialog} className="service-dialog" aria-label={selected ? selected[2] : 'Service'} onCancel={event => { event.preventDefault(); close(); }}>
+      <AnimatePresence onExitComplete={landed}>
+        {selected && <motion.div key="scrim" className="service-scrim" onClick={close} initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: duration.base, ease: ease.enter } }} exit={{ opacity: 0, transition: { duration: duration.base, ease: ease.exit } }} />}
+        {selected && <motion.div key={`card-${selected[1]}`} className="service-expanded" layoutId={reducedMotion ? undefined : `service-${selected[1]}`} style={{ borderRadius: 20 }} transition={spring.sheet}
+          exit={reducedMotion ? { opacity: 0 } : undefined}>
+          <motion.div className="service-expanded-body" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.14, duration: duration.base, ease: ease.enter } }} exit={{ opacity: 0, transition: { duration: duration.quick, ease: ease.exit } }}>
+            <button className="service-close" aria-label="Close service" onClick={close}><Icon name="close" /></button><span className="service-category">{selected[0]} / {selected[1]}</span><h2>{selected[2]}</h2><p className="service-description">{selected[4]}</p><span className="goal-label">WHAT WE CAN WORK ON</span><ul>{selected[5].map(item => <li key={item}>{item}</li>)}</ul><div className="service-call"><span>Tell me what you need.<br />We’ll discuss scope and next steps.</span><button className="visit-website" onClick={() => { const name = selected[2]; close(); onCall(name); }}>Get on a call <Icon name="arrowUpRight" /></button></div>
+          </motion.div>
+        </motion.div>}
+      </AnimatePresence>
     </dialog>
   </div>;
 }

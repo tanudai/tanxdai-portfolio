@@ -43,3 +43,19 @@
   .spotlight::after,.spotlight::before,.project-dialog,.project-dialog::backdrop{transition:none}
   .is-active .stack-chips li,.project-dialog[open] dl>div{animation:none}
 }
+
+/* Tabs: one surface slides between tabs (true x/width, so borders never stretch) and flares into the panel below */
+.top-tabs{position:relative}
+.top-tabs button{position:relative;z-index:1}
+.top-tabs .active-tab-surface{position:absolute;inset:auto;left:0;z-index:0;margin-top:0;border:1px solid #303030;border-bottom:0;border-radius:12px 12px 0 0;background:#101010;box-shadow:inset 0 1px 0 #ffffff24;pointer-events:none}
+.top-tabs .active-tab-surface::after{content:'';position:absolute;left:-1px;right:-1px;bottom:-1px;height:2px;background:#101010}
+.top-tabs .active-tab-surface::before{content:'';position:absolute;inset:auto -13px -1px;height:13px;pointer-events:none;
+  background:radial-gradient(circle at 0 0,transparent 11.5px,#303030 12px 12.5px,#101010 13px) left bottom/13px 13px no-repeat,
+             radial-gradient(circle at 100% 0,transparent 11.5px,#303030 12px 12.5px,#101010 13px) right bottom/13px 13px no-repeat}
+
+/* Service card: a transparent full-screen dialog hosts our own scrim; the card morphs between tile and centre */
+.service-dialog{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:12px;border:0;border-radius:0;background:transparent;overflow:hidden}
+.service-dialog[open]{display:grid;place-items:center}
+.service-dialog::backdrop{background:transparent;backdrop-filter:none}
+.service-scrim{position:fixed;inset:0;background:#000000c2;backdrop-filter:blur(6px)}
+.service-dialog .service-expanded{position:relative;z-index:1;width:min(690px,100%);max-height:100%;overflow:hidden}
