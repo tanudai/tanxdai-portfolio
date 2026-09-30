@@ -1,4 +1,5 @@
 // Public websites verified on 2026-09-30. Build durations require the owner's input.
+// Optional `result`: a real, verifiable outcome written by the owner. It renders on the project card only when present; never invent one.
 export const projects = [
   {
     name: 'AIM Faucet',

@@ -19,3 +19,6 @@ export const spring = {
 export const loop = {
   trail: { duration: 7, ease: 'linear', repeat: Infinity },         // border light round the active frame
 };
+
+// Physics feel for the draggable blocks on the Personal tab (Matter.js constraint): how firmly the pointer holds a block, and how much that hold is damped.
+export const grip = { stiffness: 0.18, damping: 0.12 };

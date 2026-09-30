@@ -9,6 +9,8 @@
 @import "./workspace.css" layer(legacy);
 @import "./premium.css" layer(components);
 @import "./readability.css" layer(components);
+@import "./physics.css" layer(components);
+@import "./avatar.css" layer(components);
 
 @theme static {
   --font-sans: 'DM Sans', sans-serif;

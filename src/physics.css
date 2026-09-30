@@ -1,0 +1,39 @@
+/* Personal tab: the "What I can help with" and "My toolkit" cards hold a pile of physical blocks (see PhysicsPile.jsx). */
+.bento-services, .bento-tools { display: flex; flex-direction: column; gap: 6px; padding: 16px 16px 14px; }
+.bento-card-link { appearance: none; background: none; border: 0; padding: 0; margin: 0; width: 100%; min-height: 32px; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bento-card-link:hover { background: none; border-color: transparent; color: #fff; }
+
+.phys-field { position: relative; flex: 1 1 0; min-height: 0; overflow: hidden; touch-action: none; }
+.phys-block {
+  position: absolute; left: 0; top: 0; margin: 0; opacity: 0; display: flex; align-items: center; justify-content: center;
+  font: inherit; color: #d8d8d8; background: linear-gradient(180deg, #343434, #262626); border: 1px solid #424242;
+  box-shadow: 0 6px 14px #0009, inset 0 1px 0 #ffffff14; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; will-change: transform;
+  transition: border-color var(--dur-quick) var(--ease-enter), box-shadow var(--dur-quick) var(--ease-enter), color var(--dur-quick) var(--ease-enter);
+}
+.personal-bento .phys-block:hover { background: linear-gradient(180deg, #3a3a3a, #2a2a2a); border-color: #555; }
+.phys-block.is-dragging { cursor: grabbing; z-index: 2; border-color: #b7efcf88; color: #fff; box-shadow: 0 14px 26px #000b, 0 0 0 1px #b7efcf22, inset 0 1px 0 #ffffff1c; }
+.phys-block:focus-visible { outline: 2px solid var(--color-mint); outline-offset: 2px; }
+.phys-chip { padding: 8px 13px; border-radius: 999px; font-size: 13px; line-height: 1.2; white-space: nowrap; }
+.phys-tile { width: 68px; height: 54px; flex-direction: column; gap: 3px; border-radius: 14px; }
+.phys-tile b { font-size: 17px; letter-spacing: -.04em; line-height: 1; color: #ececec; }
+.phys-tile small { font-size: var(--text-label); line-height: 1.1; color: #aaa; }
+
+/* Phones: the two physics cards need room to pile, so they take the full width and the Selected work preview steps aside
+   (the Projects shortcut and the Work tab still lead there). Rows share the height; the pile fields keep at least ~60px. */
+@media (max-width: 600px) {
+  .personal-bento { grid-template-rows: minmax(0, .85fr) minmax(0, .55fr) minmax(0, 1.3fr) minmax(0, 1.35fr) minmax(0, .75fr); }
+  .personal-bento .bento-work { display: none; }
+  .personal-bento .bento-services, .personal-bento .bento-tools { display: flex; grid-column: 1 / -1; padding: 12px 12px 10px; }
+  .personal-bento .bento-collab { grid-column: 1 / -1; }
+  .bento-card-link { font-size: var(--text-ui); }
+  .bento-collab { justify-content: center; }
+  .bento-collab .bento-label, .bento-collab p { display: none; }
+  .bento-collab h2 { font-size: 22px; margin: 0 0 10px; }
+  .bento-collab h2 br { display: none; }
+  .bento-tools .bento-label { font-size: var(--text-label); letter-spacing: .12em; }
+}
+/* Short phones: drop the shortcut row too, so the piles keep a usable height. */
+@media (max-width: 600px) and (max-height: 700px) {
+  .personal-bento { grid-template-rows: minmax(0, 1fr) minmax(0, 1.05fr) minmax(0, 1.1fr) minmax(0, 1.2fr); }
+  .personal-bento .bento-shortcuts { display: none; }
+}

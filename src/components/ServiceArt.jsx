@@ -1,51 +1,53 @@
 // One small animated explainer per service tile, drawn as a pure function of progress p (0 to 1).
-// Each tells the service as three captioned steps (input, what we do, outcome) using free 3D objects
-// (Microsoft Fluent Emoji 3D, MIT, see public/service-3d/LICENSE), recoloured to silver and mint. Plays once, rests on the finished flow, replays on hover or focus.
+// Each tells the service as three captioned steps (input, what we do, outcome) using Phosphor duotone icons
+// (MIT, see public/service-icons-LICENSE.txt) in glass tiles. Plays once, replays twice on hover or focus, then rests on the finished flow.
 import { useEffect, useState } from 'react';
 import { animate, useMotionValue, useMotionValueEvent, useReducedMotion } from 'motion/react';
 import { curves } from '../film/ease.js';
+import icons from './serviceIcons.js';
 
 const C = { line: '#343434', dim: '#6a6a6a', ink: '#e6e6e6', mint: '#b7efcf', fill: '#161616' };
 // Eased 0..1 for the slice of p between a and b.
 const seg = (p, a, b, curve = 'enter') => curves[curve](Math.min(1, Math.max(0, (p - a) / (b - a))));
-// Objects are recoloured to the site palette: silver for the working steps, mint for the outcome.
-const asset = (name, last) => `${import.meta.env.BASE_URL}service-3d/${name}-${last ? 'mint' : 'silver'}.webp`;
-
-// Each story: three steps of [3D object, caption]. The last step is the outcome and is highlighted in mint.
+// Each story: three steps of [icon, caption]. The last step is the outcome and is highlighted in mint.
 const stories = {
-  '01': [['speech_balloon', 'Enquiry'], ['robot', 'Grounded answers'], ['check_mark_button', 'Lead handed on']],
-  '02': [['memo', 'Loose brief'], ['receipt', 'Draft quote'], ['check_mark_button', 'You approve']],
-  '03': [['books', 'Your documents'], ['magnifying_glass_tilted_left', 'Search'], ['link', 'Answer + source']],
-  '04': [['page_with_curl', 'Invoice or form'], ['eye', 'Extract, review'], ['open_file_folder', 'Your tools']],
-  '05': [['ticket', 'Request'], ['headphone', 'Policy draft'], ['check_mark_button', 'You send']],
-  '06': [['incoming_envelope', 'Enquiry'], ['memo', 'Summary'], ['calendar', 'Follow-up']],
-  '07': [['package', 'Your catalog'], ['compass', 'Guided match'], ['gem_stone', 'Right fit']],
-  '08': [['memo', 'Source material'], ['chart_increasing', 'Report draft'], ['fountain_pen', 'You approve']],
-  '09': [['artist_palette', 'Design'], ['desktop_computer', 'Build'], ['rocket', 'Launch']],
-  '10': [['artist_palette', 'Design'], ['puzzle_piece', 'CMS build'], ['graduation_cap', 'Team handover']],
-  '11': [['desktop_computer', 'Your product'], ['electric_plug', 'Connect AI'], ['sparkles', 'New ability']],
-  '12': [['floppy_disk', 'Backups'], ['wrench', 'Updates'], ['green_heart', 'Stays healthy']],
-  '13': [['magnifying_glass_tilted_right', 'Review'], ['clipboard', 'Findings'], ['check_mark_button', 'Fix first']],
-  '14': [['keyboard', 'Keyboard'], ['eye', 'Contrast + focus'], ['wheelchair_symbol', 'Usable by all']],
-  '15': [['clipboard', 'Data inventory'], ['locked', 'Consent controls'], ['shield', 'Ready']],
-  '16': [['light_bulb', 'Ideas'], ['balance_scale', 'Feasibility'], ['bullseye', 'Pilot scope']],
-  '17': [['stopwatch', 'Monitor'], ['bar_chart', 'Evaluate'], ['sparkles', 'Improve']],
-  '18': [['graduation_cap', 'Train'], ['handshake', 'Practice together'], ['brain', 'Confident use']],
+  '01': [['chat-circle-text', 'Enquiry'], ['robot', 'Grounded answers'], ['handshake', 'Lead handed on']],
+  '02': [['note-pencil', 'Loose brief'], ['receipt', 'Draft quote'], ['seal-check', 'You approve']],
+  '03': [['books', 'Your documents'], ['magnifying-glass', 'Search'], ['link', 'Answer + source']],
+  '04': [['file-text', 'Invoice or form'], ['scan', 'Extract, review'], ['table', 'Your tools']],
+  '05': [['ticket', 'Request'], ['headset', 'Policy draft'], ['check-circle', 'You send']],
+  '06': [['envelope-simple', 'Enquiry'], ['notepad', 'Summary'], ['calendar-check', 'Follow-up']],
+  '07': [['package', 'Your catalog'], ['compass', 'Guided match'], ['diamond', 'Right fit']],
+  '08': [['article', 'Source material'], ['chart-line-up', 'Report draft'], ['pen-nib', 'You approve']],
+  '09': [['paint-brush', 'Design'], ['browser', 'Build'], ['rocket-launch', 'Launch']],
+  '10': [['paint-brush', 'Design'], ['puzzle-piece', 'CMS build'], ['graduation-cap', 'Team handover']],
+  '11': [['browser', 'Your product'], ['plugs-connected', 'Connect AI'], ['sparkle', 'New ability']],
+  '12': [['hard-drives', 'Backups'], ['wrench', 'Updates'], ['heartbeat', 'Stays healthy']],
+  '13': [['magnifying-glass', 'Review'], ['clipboard-text', 'Findings'], ['check-square', 'Fix first']],
+  '14': [['keyboard', 'Keyboard'], ['eye', 'Contrast + focus'], ['person-arms-spread', 'Usable by all']],
+  '15': [['clipboard-text', 'Data inventory'], ['lock-key', 'Consent controls'], ['shield-check', 'Ready']],
+  '16': [['lightbulb', 'Ideas'], ['scales', 'Feasibility'], ['target', 'Pilot scope']],
+  '17': [['gauge', 'Monitor'], ['chart-bar', 'Evaluate'], ['sparkle', 'Improve']],
+  '18': [['graduation-cap', 'Train'], ['users-three', 'Practice'], ['brain', 'Confident use']],
 };
 
+// Step captions of a service's flow, used as a caption where the stage is too small for step labels.
+export const flowSteps = id => (stories[id] || []).map(step => step[1]);
+
 const X = [52, 160, 268]; // step centres in the 320 x 74 viewBox, shaped like the tile's stage
-const SIZE = 38, CY = 25;
+const TILE = 46, ICON = 30, CY = 25;
 const START = [0, .3, .6]; // when each step appears, as a share of p
 
 function Step({ name, label, i, p, last }) {
   const k = seg(p, START[i], START[i] + .2, 'hero');
-  const fin = last ? seg(p, .82, 1) : 0; // the outcome glows once the flow arrives
-  const cx = X[i];
+  const fin = last ? seg(p, .82, 1) : 0; // the outcome lights up once the flow arrives
+  const cx = X[i], on = last && fin > .5;
   return <g opacity={Math.min(1, k * 2)} transform={`translate(0 ${(1 - k) * 8})`}>
-    <circle cx={cx} cy={CY} r="24" fill={C.fill} stroke={last && fin > .5 ? C.mint : C.line} opacity=".9" />
-    {last && <circle cx={cx} cy={CY} r={24 + fin * 4} fill="none" stroke={C.mint} opacity={(1 - fin) * .6} />}
-    <image href={asset(name, last)} x={cx - SIZE / 2} y={CY - SIZE / 2} width={SIZE} height={SIZE} style={{ transformOrigin: `${cx}px ${CY}px`, transform: `scale(${.55 + .45 * k})` }} />
-    <text className="lbl" x={cx} y="62" textAnchor="middle" fontSize="10" fill={last && fin > .5 ? C.mint : C.ink} opacity={seg(p, START[i] + .08, START[i] + .22)}>{label}</text>
+    {last && <circle cx={cx} cy={CY} r="34" fill="url(#sa-glow)" opacity={fin * .9} />}
+    <rect x={cx - TILE / 2} y={CY - TILE / 2} width={TILE} height={TILE} rx="13" fill="url(#sa-tile)" stroke={on ? C.mint : C.line} strokeOpacity={on ? .9 : 1} />
+    <rect x={cx - TILE / 2 + 1} y={CY - TILE / 2 + 1} width={TILE - 2} height="14" rx="12" fill="url(#sa-sheen)" />
+    <g transform={`translate(${cx} ${CY}) scale(${ICON / 256 * (.7 + .3 * k)}) translate(-128 -128)`} color={on ? C.mint : C.ink} fill="currentColor" dangerouslySetInnerHTML={{ __html: icons[name] }} />
+    <text className="lbl" x={cx} y="62" textAnchor="middle" fontSize="10" fill={on ? C.mint : C.ink} opacity={seg(p, START[i] + .08, START[i] + .22)}>{label}</text>
   </g>;
 }
 
@@ -78,8 +80,8 @@ export default function ServiceArt({ id, active, delay = 0 }) {
   useEffect(() => { // replay while hovered or focused
     if (reduced || !active) return;
     progress.set(0);
-    const run = animate(progress, 1, { duration: 1.6, ease: 'linear', repeat: Infinity, repeatDelay: 0.6 });
+    const run = animate(progress, 1, { duration: 1.6, ease: 'linear', repeat: 1, repeatDelay: 0.6 }); // two passes, then it rests on the finished flow
     return () => { run.stop(); animate(progress, 1, { duration: 0.3, ease: 'linear' }); };
   }, [active, reduced, progress]);
-  return <svg className="service-art" viewBox="0 0 320 74" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><Scene id={id} p={p} /></svg>;
+  return <svg className="service-art" viewBox="0 0 320 74" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><linearGradient id="sa-tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#202020" /><stop offset="1" stopColor="#121212" /></linearGradient><linearGradient id="sa-sheen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffffff" stopOpacity=".07" /><stop offset="1" stopColor="#ffffff" stopOpacity="0" /></linearGradient><radialGradient id="sa-glow"><stop offset="0" stopColor="#b7efcf" stopOpacity=".28" /><stop offset="1" stopColor="#b7efcf" stopOpacity="0" /></radialGradient></defs><Scene id={id} p={p} /></svg>;
 }

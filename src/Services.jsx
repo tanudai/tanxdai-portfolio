@@ -1,11 +1,12 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import ServiceArt from './components/ServiceArt.jsx';
+import ServiceArt, { flowSteps } from './components/ServiceArt.jsx';
 import { duration, ease, spring } from './motion.js';
 import Icon from './Icons.jsx';
 
 // Films load only when a service card opens, keeping them out of the initial bundle.
-const FilmPlayer = lazy(() => import('./film/FilmPlayer.jsx'));
+const loadFilm = () => import('./film/FilmPlayer.jsx');
+const FilmPlayer = lazy(loadFilm);
 
 const groups = ['AI & automation', 'Websites', 'Audits & advisory'];
 export const services = [
@@ -50,14 +51,14 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   const pages = Math.ceil(filtered.length / perPage);
   // The card flies from its tile into the dialog and back: the dialog stays open until the return flight lands.
   const close = () => setSelected(null);
-  useEffect(() => { if (selected && !dialog.current.open) dialog.current.showModal(); }, [selected]);
+  useLayoutEffect(() => { if (selected && !dialog.current.open) dialog.current.showModal(); }, [selected]); // same frame as the click
   const landed = () => { dialog.current?.close(); opener.current?.focus(); };
   return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`}>
     <div className="services-heading"><div><span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1></div><p>Development, AI integrations, and technical advice.</p></div>
     <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
-    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page}>{filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <motion.button key={service[1]} className="service-tile spotlight" onHoverStart={() => setHovered(service[1])} onHoverEnd={() => setHovered(null)} onFocus={() => setHovered(service[1])} onBlur={() => setHovered(null)} layoutId={`service-${service[1]}`} whileHover={reducedMotion ? undefined : { y: -4, rotate: -0.35, scale: 1.008 }} whileTap={{ scale: 0.98 }} style={{ borderRadius: 16 }} transition={spring.sheet} onClick={event => { opener.current = event.currentTarget; setSelected(service); }}>
+    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page}>{filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <motion.button key={service[1]} className="service-tile spotlight" onHoverStart={() => { setHovered(service[1]); loadFilm(); }} onHoverEnd={() => setHovered(null)} onFocus={() => { setHovered(service[1]); loadFilm(); }} onBlur={() => setHovered(null)} layoutId={`service-${service[1]}`} whileHover={reducedMotion ? undefined : { y: -4, rotate: -0.35, scale: 1.008 }} whileTap={{ scale: 0.98 }} style={{ borderRadius: 16 }} transition={spring.sheet} onClick={event => { opener.current = event.currentTarget; setSelected(service); }}>
       <span className="service-stage"><ServiceArt id={service[1]} active={hovered === service[1]} delay={0.1 + i * 0.07} /><span className="service-open"><Icon name="arrowUpRight" /></span></span>
-      <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span></span><h2>{service[2]}</h2><p>{service[3]}</p>
+      <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span></span><h2>{service[2]}</h2><p>{service[3]}</p><span className="service-flow">{flowSteps(service[1]).map((label, n) => <span key={label}>{n > 0 && <Icon name="arrowRight" />}{label}</span>)}</span>
     </motion.button>)}</motion.div>
     <div className="service-pagination"><span>{filtered.length} services</span><div><button aria-label="Previous services" disabled={page === 0} onClick={() => setPage(value => value - 1)}><Icon name="arrowLeft" /></button><span aria-live="polite">{page + 1} / {pages}</span><button aria-label="Next services" disabled={page === pages - 1} onClick={() => setPage(value => value + 1)}><Icon name="arrowRight" /></button></div></div>
     <dialog ref={dialog} className="service-dialog" aria-label={selected ? selected[2] : 'Service'} onCancel={event => { event.preventDefault(); close(); }}>

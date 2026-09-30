@@ -6,6 +6,8 @@ import LivePreview from './LivePreview.jsx';
 import Services, { services } from './Services.jsx';
 import { StatusCapsule, ContactDock } from './AppDetails.jsx';
 import Icon from './Icons.jsx';
+import PhysicsPile from './components/PhysicsPile.jsx';
+import MemojiAvatar from './components/MemojiAvatar.jsx';
 import { BorderTrail, SlidingNumber, TextReveal, trackSpotlight, useMagnetic } from './components/motion-kit.jsx';
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
@@ -25,6 +27,7 @@ function ProjectPoster({ project, index, active }) {
     {active && <BorderTrail radius={13} size={220} />}
     <LivePreview project={project} />
     <div className="reel-caption"><span className="goal-label">THE DEVELOPMENT GOAL</span><TextReveal text={project.goal} play={active} delay={0.12} />
+      <div className="poster-delivered"><b>Delivered</b> {project.buildType}{project.result && <><span aria-hidden="true"> · </span><b>Result</b> {project.result}</>}</div>
       {project.stack && <ul className="stack-chips" aria-label="Technology">{project.stack.split(' · ').map((tech, i) => <li key={tech} style={{ '--i': i }}>{tech}</li>)}</ul>}
       <div className="project-actions" onPointerDown={event => event.stopPropagation()}>
         <button className="project-info-button" aria-label={`About ${project.name}`} onClick={openInfo}><Icon name="info" /> <span>Project info</span></button>
@@ -141,12 +144,12 @@ function ProjectDeck({ enabled }) {
 function Personal({ onWork, onServices, onContact }) {
   return <div className="personal-bento">
     <article className="bento-intro"><span className="bento-label">DESIGN & DEVELOPMENT</span><h1>Hey, I’m Tanxdai<span>.</span></h1><p>Web developer · AI & automation</p></article>
-    <div className="bento-avatar" aria-label="Placeholder profile illustration"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="avatar-fill" x2="1" y2="1"><stop stopColor="#d5e4de"/><stop offset="1" stopColor="#7d9e96"/></linearGradient></defs><rect x="21" y="23" width="78" height="78" rx="28" fill="url(#avatar-fill)"/><path d="M25 46Q22 11 61 16Q98 16 98 49L85 40L76 27Q54 44 25 46" fill="#293932"/><ellipse cx="45" cy="62" rx="4" ry="5" fill="#263831"/><ellipse cx="76" cy="62" rx="4" ry="5" fill="#263831"/><path d="M47 79Q60 91 75 78" fill="none" stroke="#263831" strokeWidth="4" strokeLinecap="round"/></svg><span>Hello <Icon name="arrowUpRight" /></span></div>
+    <div className="bento-avatar"><MemojiAvatar /><span>Hello <Icon name="arrowUpRight" /></span></div>
     <div className="bento-shortcuts" aria-label="Explore my work"><button onClick={onWork}><span><Icon name="arrowUpRight" /></span>Projects</button><button onClick={() => onServices()}><span><Icon name="sparkle" /></span>Services</button><button onClick={onContact}><span><Icon name="at" /></span>Say hello</button><button onClick={() => onServices('Websites')}><span><Icon name="code" /></span>Development</button><button onClick={() => onServices('AI & automation')}><span><Icon name="layers" /></span>AI & more</button></div>
     <button className="bento-work" onClick={onWork}><span className="bento-card-top">Selected work <span><Icon name="arrowUpRight" /></span></span><div className="bento-previews">{[projects[0], projects[1], projects[4]].map((project, index) => <img key={project.name} src={project.image} alt={project.name} style={{ '--order': index }} />)}</div><span className="bento-footnote">Selected client projects</span></button>
-    <button className="bento-services" onClick={() => onServices()}><span className="bento-card-top">What I can help with <span><Icon name="arrowUpRight" /></span></span><div className="bento-tags">{['Custom websites', 'AI workflows', 'WordPress', 'Automation', 'Audits', 'Consulting'].map(tag => <span key={tag}>{tag}</span>)}</div></button>
-    <article className="bento-tools"><span className="bento-label">MY TOOLKIT</span><div className="tool-tiles">{[['React', 'Re'], ['Astro', 'A'], ['WordPress', 'W'], ['Motion', 'M'], ['TypeScript', 'TS']].map(([name, mark]) => <span title={name} key={name}><b>{mark}</b><small>{name}</small></span>)}</div></article>
-    <article className="bento-collab"><span className="bento-label">HAVE A PROJECT IN MIND?</span><h2>Let’s work<br />together.</h2><p>Websites, applications, and AI integrations.</p><button onClick={onContact}>Let’s collaborate <span><Icon name="arrowUpRight" /></span></button></article>
+    <article className="bento-services"><button type="button" className="bento-card-top bento-card-link" onClick={() => onServices()}>What I can help with <span><Icon name="arrowUpRight" /></span></button><PhysicsPile label="What I can help with" variant="chip" items={['Custom websites', 'AI workflows', 'WordPress', 'Automation', 'Audits', 'Consulting'].map(tag => ({ key: tag, node: tag }))} /></article>
+    <article className="bento-tools"><span className="bento-label">MY TOOLKIT</span><PhysicsPile label="My toolkit" variant="tile" items={[['React', 'Re'], ['Python', 'Py'], ['AI tools', 'AI'], ['TypeScript', 'TS'], ['Astro', 'A'], ['WordPress', 'W'], ['Motion', 'M']].map(([name, mark]) => ({ key: name, node: <><b>{mark}</b><small>{name}</small></> }))} /></article>
+    <article className="bento-collab"><span className="bento-label">HAVE A PROJECT IN MIND?</span><h2>Let’s work<br />{' '}together.</h2><p>Websites, applications, and AI integrations.</p><button onClick={onContact}>Let’s collaborate <span><Icon name="arrowUpRight" /></span></button></article>
   </div>;
 }
 
