@@ -1,0 +1,29 @@
+/* Cascade order: Tailwind theme, legacy stylesheets, premium component layer, then Tailwind utilities (later wins).
+   Tailwind preflight is intentionally not imported: the legacy CSS relies on browser defaults. */
+@layer theme, legacy, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./base.css" layer(legacy);
+@import "./deck.css" layer(legacy);
+@import "./react.css" layer(legacy);
+@import "./workspace.css" layer(legacy);
+@import "./premium.css" layer(components);
+
+@theme static {
+  --font-sans: 'DM Sans', sans-serif;
+  --color-canvas: #000;
+  --color-panel: #101010;
+  --color-card: #191919;
+  --color-raised: #242424;
+  --color-line: #333;
+  --color-ink: #f3f3f3;
+  --color-dim: #aaa;
+  --color-mint: #b7efcf;
+  --ease-enter: cubic-bezier(.16,1,.3,1);
+  --ease-exit: cubic-bezier(.7,0,.84,0);
+  --ease-hero: cubic-bezier(.65,0,.35,1);
+  /* Motion bible durations (mirror src/motion.js) */
+  --dur-quick: .18s;
+  --dur-base: .3s;
+  --dur-hero: .52s;
+}

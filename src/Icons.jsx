@@ -11,6 +11,8 @@ const paths = {
   at: <><circle cx="12" cy="12" r="4" /><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8" /></>,
   code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5" />,
   layers: <path d="m12 3 9 5-9 5-9-5 9-5ZM3 13l9 5 9-5" />,
+  check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
+  replay: <><path d="M4 12a8 8 0 1 0 2.4-5.7" /><path d="M4 4v4h4" /></>,
 };
 
 export default function Icon({ name }) {

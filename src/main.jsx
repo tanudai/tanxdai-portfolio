@@ -2,10 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { MotionConfig } from 'motion/react';
 import App from './App.jsx';
-import './base.css';
-import './deck.css';
-import './react.css';
-import './workspace.css';
+import './styles.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>

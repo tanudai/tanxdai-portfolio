@@ -1,27 +1,28 @@
 // UI audit gate: `npm run audit` (start `npm run dev` first for the fit check).
 // Static rules always run; the fit check needs the gstack browse binary and a running dev server.
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { projects } from '../src/projects.js';
 
-const src = new URL('../src/', import.meta.url);
-const read = file => readFileSync(new URL(file, src), 'utf8');
-const files = readdirSync(src);
+const src = new URL('../src/', import.meta.url).pathname;
+const read = file => readFileSync(join(src, file), 'utf8');
+const files = readdirSync(src, { recursive: true }).map(String);
 const css = files.filter(f => f.endsWith('.css'));
-const jsx = files.filter(f => /\.jsx?$/.test(f));
+const jsx = files.filter(f => /\.[jt]sx?$/.test(f));
 const failures = [];
 const check = (ok, message) => { if (!ok) failures.push(message); };
 
 // Motion: every curve comes from the named tokens in workspace.css / motion.js.
 for (const file of css) {
-  const text = read(file).replace(/:root\{--ease-[^}]*\}/g, '');
+  const text = read(file).replace(/@theme[^{]*\{[^}]*\}/g, ''); // tokens are defined once in styles.css @theme
   check(!/cubic-bezier\(/.test(text), `${file}: raw cubic-bezier; use var(--ease-enter|exit|hero)`);
   for (const [rule] of text.matchAll(/(?:animation|transition):[^;}]*\blinear\b[^;}]*/g))
     check(/spin/.test(rule), `${file}: linear motion "${rule}"; only constant rotation may be linear`);
 }
-for (const file of jsx.filter(f => f !== 'motion.js'))
-  check(!/stiffness|ease:\s*\[/.test(read(file)), `${file}: inline spring/ease; import a preset from motion.js`);
+for (const file of jsx.filter(f => f !== 'motion.js' && f !== join('lib', 'utils.js')))
+  check(!/stiffness|ease:\s*\[|ease-linear|ease-\[/.test(read(file)), `${file}: inline spring/ease; import a preset from motion.js or use ease-enter|exit|hero`);
 check(css.some(f => /prefers-reduced-motion/.test(read(f))), 'no prefers-reduced-motion guard');
 
 // Icons: SVG only, no unicode glyphs standing in for icons.
@@ -52,9 +53,11 @@ if (existsSync(browse)) {
         b('click', '[aria-label="Next services"]');
       }
       b('click', '#personal-tab'); measure('personal');
+      b('click', '#work-tab'); b('click', '.react-card:not([aria-hidden=true]) .project-info-button'); measure('project info dialog'); b('press', 'Escape');
+      b('click', '#services-tab'); b('click', '.service-grid > .service-tile:first-child'); measure('service dialog'); b('press', 'Escape');
     }
     fit = 'ran';
-  } catch (error) { failures.push(`fit check could not run against ${url}: ${error.message.split('\n')[0]}`); }
+  } catch (error) { fit = 'errored'; failures.push(`fit check could not run against ${url}: ${error.message.split('\n')[0]}`); }
 }
 
 console.log(`motion + icons: checked ${css.length} css, ${jsx.length} js/jsx files · fit: ${fit}`);

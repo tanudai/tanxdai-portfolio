@@ -6,25 +6,36 @@ import LivePreview from './LivePreview.jsx';
 import Services, { services } from './Services.jsx';
 import { StatusCapsule, ContactDock } from './AppDetails.jsx';
 import Icon from './Icons.jsx';
+import { BorderTrail, SlidingNumber, TextReveal, trackSpotlight, useMagnetic } from './components/motion-kit.jsx';
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 
-function ProjectPoster({ project, index }) {
+function ProjectPoster({ project, index, active }) {
   const info = useRef(null);
-  return <div className={`project-poster live-poster theme-${index % 4}`}>
+  const magnetic = useMagnetic();
+  const openInfo = event => {
+    const dialog = info.current;
+    dialog.showModal();
+    const from = event.currentTarget.getBoundingClientRect(), box = dialog.getBoundingClientRect();
+    dialog.style.transformOrigin = `${from.left + from.width / 2 - box.left}px ${from.top + from.height / 2 - box.top}px`;
+  };
+  const facts = [['My contribution', project.roleNote || 'Custom website development.'], ['Build approach', project.buildType], ['Build time', project.duration || 'To be added']];
+  return <div className={`project-poster live-poster spotlight theme-${index % 4} ${active ? 'is-active' : ''}`}>
     <div className="poster-top"><span>{project.type}</span><span className="live-badge"><i aria-hidden="true" />Live website</span></div>
+    {active && <BorderTrail radius={13} size={220} />}
     <LivePreview project={project} />
-    <div className="reel-caption"><span className="goal-label">THE DEVELOPMENT GOAL</span><p>{project.goal}</p>
-      {project.stack && <ul className="stack-chips" aria-label="Technology">{project.stack.split(' · ').map(tech => <li key={tech}>{tech}</li>)}</ul>}
+    <div className="reel-caption"><span className="goal-label">THE DEVELOPMENT GOAL</span><TextReveal text={project.goal} play={active} delay={0.12} />
+      {project.stack && <ul className="stack-chips" aria-label="Technology">{project.stack.split(' · ').map((tech, i) => <li key={tech} style={{ '--i': i }}>{tech}</li>)}</ul>}
       <div className="project-actions" onPointerDown={event => event.stopPropagation()}>
-        <button className="project-info-button" aria-label={`About ${project.name}`} onClick={() => info.current.showModal()}><Icon name="info" /> <span>Project info</span></button>
-        <a className="visit-website" href={project.liveUrl} target="_blank" rel="noopener noreferrer">Visit website <Icon name="arrowUpRight" /></a>
+        <button className="project-info-button" aria-label={`About ${project.name}`} onClick={openInfo}><Icon name="info" /> <span>Project info</span></button>
+        <motion.a className="visit-website" href={project.liveUrl} target="_blank" rel="noopener noreferrer" {...magnetic}>Visit website <Icon name="arrowUpRight" /></motion.a>
       </div>
     </div>
-    <dialog className="project-dialog" ref={info} onPointerDown={event => event.stopPropagation()}>
-      <button className="close-info" aria-label="Close project information" onClick={() => info.current.close()}><Icon name="close" /></button>
-      <span className="goal-label">PROJECT NOTES</span><h2>{project.name}</h2>
-      <dl><div><dt>Development goal</dt><dd>{project.goal}</dd></div><div><dt>My contribution</dt><dd>{project.roleNote || 'Custom website development.'}</dd></div><div><dt>Build approach</dt><dd>{project.buildType}</dd></div><div><dt>Technology stack</dt><dd>{project.stack || 'To be confirmed'}</dd></div><div><dt>Build time</dt><dd>{project.duration || 'To be added'}</dd></div></dl>
+    <dialog className="project-dialog" ref={info} onPointerDown={event => event.stopPropagation()} onClick={event => { if (event.target === info.current) info.current.close(); }}>
+      <div className="project-dialog-head"><div><span className="goal-label">PROJECT NOTES</span><h2>{project.name}</h2><p>{project.type}</p></div>
+        <button className="close-info" aria-label="Close project information" onClick={() => info.current.close()}><Icon name="close" /></button></div>
+      <dl>{facts.map(([term, detail], i) => <div key={term} style={{ '--i': i }}><dt>{term}</dt><dd>{detail}</dd></div>)}
+        <div style={{ '--i': facts.length }}><dt>Technology</dt><dd>{project.stack ? <ul className="stack-chips">{project.stack.split(' · ').map(tech => <li key={tech}>{tech}</li>)}</ul> : 'To be confirmed'}</dd></div></dl>
       <a className="visit-website" href={project.liveUrl} target="_blank" rel="noopener noreferrer">Open live website <Icon name="arrowUpRight" /></a>
     </dialog>
   </div>;
@@ -116,12 +127,12 @@ function ProjectDeck({ enabled }) {
         {projects.map((project, i) => <article key={project.name} className={`react-card theme-${i % 4}`}
           style={{ top: i * step, height }} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${projects.length}: ${project.name}`}
           aria-hidden={i !== index} inert={i !== index}>
-          <ProjectPoster project={project} index={i} />
+          <ProjectPoster project={project} index={i} active={i === index} />
         </article>)}
       </motion.div>
     </div>
     <div className="deck-controls"><motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(index - 1)} disabled={index === 0} aria-label="Previous project"><Icon name="arrowUp" /></motion.button>
-      <div className="project-selector"><div className="project-filmstrip" aria-label="Choose a project">{projects.map((project, i) => <button key={project.name} aria-label={`Show ${project.name}`} aria-pressed={i === index} title={project.name} onClick={() => goTo(i)}><img src={project.image} alt="" /><span>{String(i + 1).padStart(2, '0')}</span></button>)}</div><span id="deck-count" aria-live="polite">{String(index + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}</span><small>SWIPE TO EXPLORE</small></div>
+      <div className="project-selector"><div className="project-filmstrip" aria-label="Choose a project">{projects.map((project, i) => <button key={project.name} aria-label={`Show ${project.name}`} aria-pressed={i === index} title={project.name} onClick={() => goTo(i)}><img src={project.image} alt="" /><span>{String(i + 1).padStart(2, '0')}</span></button>)}</div><span id="deck-count" aria-live="polite"><SlidingNumber value={index + 1} /> / {String(projects.length).padStart(2, '0')}</span><small>SWIPE TO EXPLORE</small></div>
       <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(index + 1)} disabled={index === projects.length - 1} aria-label="Next project"><Icon name="arrowDown" /></motion.button>
     </div>
   </>;
@@ -146,6 +157,7 @@ export default function App() {
   const [time, setTime] = useState(formatTime);
   const contact = useRef(null);
   useEffect(() => { const timer = setInterval(() => setTime(formatTime()), 60000); return () => clearInterval(timer); }, []);
+  useEffect(trackSpotlight, []);
   return <><div className="ambient" aria-hidden="true" />
     <header><a href="/" className="wordmark">tanxdai<span>®</span></a><StatusCapsule time={time} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></header>
     <div className="workspace-shell"><nav className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length; tabs[next].focus(); tabs[next].click(); }}>{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { setTab(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}>{tab === key && <motion.span className="active-tab-surface" layoutId="active-tab" transition={springs.ui} />}<svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>

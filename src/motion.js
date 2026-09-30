@@ -14,3 +14,8 @@ export const spring = {
   sheet: { type: 'spring', stiffness: 330, damping: 32 },           // dialogs and sheets
   page: { type: 'spring', stiffness: 340, damping: 32 },            // service page changes
 };
+
+// Constant-rate travel is the one place linear motion is correct.
+export const loop = {
+  trail: { duration: 7, ease: 'linear', repeat: Infinity },         // border light round the active frame
+};
