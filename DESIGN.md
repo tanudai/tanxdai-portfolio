@@ -21,10 +21,13 @@ Canvas #000; panel #101010; card #191919; elevated #242424; border #333; text #f
 ## Motion
 Short opacity transitions; spring only for spatial transitions and card expansion. No continuous decorative loops. Reduced-motion disables decorative movement. No live iframe loading. Previews are local WebP images with explicit external links.
 
+Motion bible: every curve and spring is a named preset in `src/motion.js` (ease enter/exit/hero, springs deck/ui/sheet/page) mirrored as `--ease-*`/`--dur-*` tokens in `workspace.css`. Exits run faster than entrances. Icons are SVG (`src/Icons.jsx`), never unicode glyphs. `npm run audit` enforces these rules and checks that no card content escapes its card at 11 viewport sizes; run it before shipping.
+
 ## Interaction and accessibility
 Native buttons, native modal focus containment, labeled controls, visible focus, keyboard tab navigation. Target 44px actions. Content must remain reachable with enlarged text; permit internal modal overflow rather than clipping. Never show fake success for unavailable contact actions.
 
 ## Decisions log
 - Owner-selected: black palette, application shell, no page scrolling, service tiles, personal bento, local screenshots.
 - Consultation recommendation: give client work visual priority; remove low-information copy and preserve mobile readability.
+- 2026-10-01: Applied the video-knowledge method (named motion presets, one transition language, audit gate before showing). Very short screens (≤500px tall) let Personal scroll inside its panel rather than clip.
 - Owner-confirmed emphasis: the interactive app experience, with playful motion. Express this through tile lift, service-page transitions, connected tabs, and Personal card entrance; keep the black palette and avoid persistent decorative loops.

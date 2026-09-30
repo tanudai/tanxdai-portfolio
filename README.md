@@ -6,6 +6,7 @@ React + Motion portfolio prototype, built with Vite.
 - `npm run dev -- --port 5173`
 - `npm run build`
 - `npm run preview`
+- `npm run audit` (motion, icon and screen-fit gate; start the dev server first)
 
 Open `/` or `/prototype/motion.html`. Both routes render the React app.
 
