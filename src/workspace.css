@@ -95,5 +95,5 @@ body{background:#000}.workspace-shell{background:#090909;border-color:#262626;bo
 .preview-surface img{transition:transform var(--dur-hero) var(--ease-enter)}
 .live-preview:is(:hover,:focus-visible) .preview-surface img{transform:scale(1.015)}
 @media(prefers-reduced-motion:reduce){.preview-surface img{transition:none}.live-preview:is(:hover,:focus-visible) .preview-surface img{transform:none}}
-/* Very short screens (landscape phones, 200% zoom): Personal scrolls inside its panel rather than clipping */
-@media(max-height:500px){#personal-panel{overflow-y:auto;align-items:flex-start}.personal-bento{height:auto;grid-auto-rows:minmax(110px,auto);grid-template-rows:none}.bento-shortcuts{grid-column:1/-1}.reel-caption .goal-label{display:none}}
+/* Very short screens (landscape phones, 200% zoom): fewer cards, never scroll */
+@media(max-height:500px){.reel-caption .goal-label{display:none}}

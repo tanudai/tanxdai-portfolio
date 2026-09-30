@@ -28,7 +28,7 @@ check(css.some(f => /prefers-reduced-motion/.test(read(f))), 'no prefers-reduced
 // Icons: SVG only, no unicode glyphs standing in for icons.
 for (const file of jsx) check(!/[↗↑↓←→×ⓘ✳⌘◈]/.test(read(file)), `${file}: unicode glyph icon; use <Icon name=…>`);
 
-// Fit: no card content escapes its card and the page never scrolls, at every size and tab.
+// Fit: no card content escapes its card, nothing scrolls, and no text is under 12px, at every size, tab, project and service page.
 const browse = process.env.BROWSE || `${homedir()}/.claude/skills/gstack/browse/dist/browse`;
 const url = process.env.AUDIT_URL || 'http://127.0.0.1:5173/';
 const sizes = ['1920x1080', '1440x900', '1366x768', '1280x650', '1024x700', '768x1024', '390x844', '375x667', '320x568', '844x390', '720x450'];
@@ -36,13 +36,17 @@ let fit = 'SKIPPED (browse binary not found)';
 if (existsSync(browse)) {
   const b = (...args) => execFileSync(browse, args, { encoding: 'utf8', timeout: 20000 });
   const script = new URL('fit-check.js', import.meta.url).pathname;
+  const textScript = new URL('text-check.js', import.meta.url).pathname;
   try {
     for (const size of sizes) {
       b('viewport', size); b('goto', url);
       const measure = label => {
         execFileSync('sleep', ['0.8']);
-        const result = b('eval', script).replace(/-+ (BEGIN|END) UNTRUSTED[^\n]*\n?/g, '').trim();
+        const clean = out => out.replace(/-+ (BEGIN|END) UNTRUSTED[^\n]*\n?/g, '').trim();
+        const result = clean(b('eval', script));
         check(result === 'ok', `fit ${size} ${label}: ${result}`);
+        const text = clean(b('eval', textScript));
+        check(text === 'ok', `text ${size} ${label}: ${text}`);
       };
       b('click', '#work-tab');
       for (let n = 1; n <= projects.length; n++) { b('click', `.project-filmstrip button:nth-child(${n})`); measure(`work #${n}`); }

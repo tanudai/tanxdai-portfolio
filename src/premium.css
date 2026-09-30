@@ -59,3 +59,26 @@
 .service-dialog::backdrop{background:transparent;backdrop-filter:none}
 .service-scrim{position:fixed;inset:0;background:#000000c2;backdrop-filter:blur(6px)}
 .service-dialog .service-expanded{position:relative;z-index:1;width:min(690px,100%);max-height:100%;overflow:hidden}
+
+/* Personal on very short screens: two rows, toolkit and tag cards dropped (the shortcuts cover them) */
+@media(max-height:500px){
+  .personal-bento{grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:1fr 1fr;height:100%}
+  .bento-tools,.bento-services{display:none}
+  .bento-intro{grid-column:span 5}.bento-avatar{grid-column:span 2}.bento-shortcuts{grid-column:span 5}
+  .bento-work{grid-column:span 6}.bento-collab{grid-column:span 6}
+  .bento-intro .bento-label,.bento-collab .bento-label,.bento-collab p,.bento-footnote,.bento-shortcuts button:nth-child(5){display:none}
+}
+
+/* Readable floor (owner): no text under 12px anywhere; body copy 14px+. Values only ever raise the legacy sizes. */
+.deck-eyebrow,.goal-label,.live-badge,.poster-top>span,.top-tabs small,.status-capsule,.service-category,.service-number,.tile-open,
+.service-filters button,.service-pagination>span,.bento-label,.bento-footnote,.bento-card-top,.bento-shortcuts button,.tool-tiles small,
+.bento-tags span,.bento-collab button,.stack-chips li,.bento-avatar span,.contact-option small,.expanding-contact>p,.service-call>span,.service-pagination span,.window-head{font-size:12px}
+.bento-collab p{font-size:14px}
+@media(max-width:700px),(max-height:740px){.service-tile p,.bento-intro p,.reel-caption p{font-size:14px}.visit-website,.project-info-button{font-size:13px}}
+/* Fit after the readable floor: drop secondary items instead of shrinking text */
+@media(max-width:700px){.service-tile .tile-open{display:none}.bento-tags span:nth-child(n+5){display:none}}
+@media(max-width:400px),(max-height:500px){.bento-shortcuts button:nth-child(n+4){display:none}}
+@media(max-height:500px){.reel-caption p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}}
+@media(max-width:700px) and (max-height:700px){.bento-tags span:nth-child(n+4){display:none}}
+@media(max-width:700px) and (max-height:600px){.bento-tags span:nth-child(n+3){display:none}}
+@media(max-width:700px) and (max-height:600px){.bento-services{display:none}.bento-work{grid-column:span 12}}
