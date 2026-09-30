@@ -13,11 +13,11 @@ const asset = (name, last) => `${import.meta.env.BASE_URL}service-3d/${name}-${l
 
 // Each story: three steps of [3D object, caption]. The last step is the outcome and is highlighted in mint.
 const stories = {
-  '01': [['speech_balloon', 'Enquiry'], ['robot', 'Answers from your info'], ['check_mark_button', 'Lead to your team']],
+  '01': [['speech_balloon', 'Enquiry'], ['robot', 'Grounded answers'], ['check_mark_button', 'Lead handed on']],
   '02': [['memo', 'Loose brief'], ['receipt', 'Draft quote'], ['check_mark_button', 'You approve']],
   '03': [['books', 'Your documents'], ['magnifying_glass_tilted_left', 'Search'], ['link', 'Answer + source']],
-  '04': [['page_with_curl', 'Invoice or form'], ['eye', 'Extract + review'], ['open_file_folder', 'Your tools']],
-  '05': [['ticket', 'Request'], ['headphone', 'Policy-based draft'], ['check_mark_button', 'You send']],
+  '04': [['page_with_curl', 'Invoice or form'], ['eye', 'Extract, review'], ['open_file_folder', 'Your tools']],
+  '05': [['ticket', 'Request'], ['headphone', 'Policy draft'], ['check_mark_button', 'You send']],
   '06': [['incoming_envelope', 'Enquiry'], ['memo', 'Summary'], ['calendar', 'Follow-up']],
   '07': [['package', 'Your catalog'], ['compass', 'Guided match'], ['gem_stone', 'Right fit']],
   '08': [['memo', 'Source material'], ['chart_increasing', 'Report draft'], ['fountain_pen', 'You approve']],
@@ -45,7 +45,7 @@ function Step({ name, label, i, p, last }) {
     <circle cx={cx} cy={CY} r="24" fill={C.fill} stroke={last && fin > .5 ? C.mint : C.line} opacity=".9" />
     {last && <circle cx={cx} cy={CY} r={24 + fin * 4} fill="none" stroke={C.mint} opacity={(1 - fin) * .6} />}
     <image href={asset(name, last)} x={cx - SIZE / 2} y={CY - SIZE / 2} width={SIZE} height={SIZE} style={{ transformOrigin: `${cx}px ${CY}px`, transform: `scale(${.55 + .45 * k})` }} />
-    <text className="lbl" x={cx} y="62" textAnchor="middle" fontSize="9" fill={last && fin > .5 ? C.mint : C.ink} opacity={seg(p, START[i] + .08, START[i] + .22)}>{label}</text>
+    <text className="lbl" x={cx} y="62" textAnchor="middle" fontSize="10" fill={last && fin > .5 ? C.mint : C.ink} opacity={seg(p, START[i] + .08, START[i] + .22)}>{label}</text>
   </g>;
 }
 
