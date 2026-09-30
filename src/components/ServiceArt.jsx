@@ -1,6 +1,6 @@
 // One small animated explainer per service tile, drawn as a pure function of progress p (0 to 1).
 // Each tells the service as three captioned steps (input, what we do, outcome) using free 3D objects
-// (Microsoft Fluent Emoji 3D, MIT, see public/service-3d/LICENSE). Plays once, rests on the finished flow, replays on hover or focus.
+// (Microsoft Fluent Emoji 3D, MIT, see public/service-3d/LICENSE), recoloured to silver and mint. Plays once, rests on the finished flow, replays on hover or focus.
 import { useEffect, useState } from 'react';
 import { animate, useMotionValue, useMotionValueEvent, useReducedMotion } from 'motion/react';
 import { curves } from '../film/ease.js';
@@ -8,7 +8,8 @@ import { curves } from '../film/ease.js';
 const C = { line: '#343434', dim: '#6a6a6a', ink: '#e6e6e6', mint: '#b7efcf', fill: '#161616' };
 // Eased 0..1 for the slice of p between a and b.
 const seg = (p, a, b, curve = 'enter') => curves[curve](Math.min(1, Math.max(0, (p - a) / (b - a))));
-const asset = name => `${import.meta.env.BASE_URL}service-3d/${name}.webp`;
+// Objects are recoloured to the site palette: silver for the working steps, mint for the outcome.
+const asset = (name, last) => `${import.meta.env.BASE_URL}service-3d/${name}-${last ? 'mint' : 'silver'}.webp`;
 
 // Each story: three steps of [3D object, caption]. The last step is the outcome and is highlighted in mint.
 const stories = {
@@ -43,7 +44,7 @@ function Step({ name, label, i, p, last }) {
   return <g opacity={Math.min(1, k * 2)} transform={`translate(0 ${(1 - k) * 8})`}>
     <circle cx={cx} cy={CY} r="24" fill={C.fill} stroke={last && fin > .5 ? C.mint : C.line} opacity=".9" />
     {last && <circle cx={cx} cy={CY} r={24 + fin * 4} fill="none" stroke={C.mint} opacity={(1 - fin) * .6} />}
-    <image href={asset(name)} x={cx - SIZE / 2} y={CY - SIZE / 2} width={SIZE} height={SIZE} style={{ transformOrigin: `${cx}px ${CY}px`, transform: `scale(${.55 + .45 * k})` }} />
+    <image href={asset(name, last)} x={cx - SIZE / 2} y={CY - SIZE / 2} width={SIZE} height={SIZE} style={{ transformOrigin: `${cx}px ${CY}px`, transform: `scale(${.55 + .45 * k})` }} />
     <text className="lbl" x={cx} y="62" textAnchor="middle" fontSize="9" fill={last && fin > .5 ? C.mint : C.ink} opacity={seg(p, START[i] + .08, START[i] + .22)}>{label}</text>
   </g>;
 }
