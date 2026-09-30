@@ -1,0 +1,59 @@
+import { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { ServiceDemo } from './AppDetails.jsx';
+
+const groups = ['AI & automation', 'Websites', 'Audits & advisory'];
+export const services = [
+  ['AI & automation', '01', 'Enquiry assistants', 'Make every enquiry easier to act on.', 'An assistant grounded in your approved business information, with a clear handoff to your team.', ['Business FAQ and knowledge setup', 'Lead capture and qualification', 'Human handoff and answer testing']],
+  ['AI & automation', '02', 'Quote preparation', 'From a loose brief to a useful draft.', 'Turn product requirements, quantities, and timelines into structured briefs and draft quotations.', ['Requirements capture', 'Draft quote workflow', 'Staff approval before sending']],
+  ['AI & automation', '03', 'Knowledge assistants', 'Your company’s knowledge, within reach.', 'Help your team find answers in approved documents, with sources and appropriate access controls.', ['Document preparation and search', 'Source-linked answers', 'Permissions and quality checks']],
+  ['AI & automation', '04', 'Document workflows', 'Less copying. More useful information.', 'Extract and organize information from invoices, forms, and PDFs, with review for uncertain results.', ['Structured data extraction', 'Review and correction steps', 'Export to your existing tools']],
+  ['AI & automation', '05', 'Support copilots', 'Give your team a better first draft.', 'Help support staff find policies, categorize requests, and draft consistent responses.', ['Ticket classification', 'Policy-grounded reply drafts', 'Escalation to a person']],
+  ['AI & automation', '06', 'CRM & follow-ups', 'Keep the next step clear.', 'Connect enquiries to your CRM and prepare useful summaries, assignments, and follow-up drafts.', ['Enquiry routing', 'Conversation summaries', 'Reviewable follow-up workflows']],
+  ['AI & automation', '07', 'Product discovery', 'Help buyers find the right fit.', 'Guide visitors through your catalog using specifications and requirements, with real product information.', ['Catalog and specification setup', 'Guided product matching', 'Sales-team handoff']],
+  ['AI & automation', '08', 'Content & reporting', 'Turn source material into useful drafts.', 'Create repeatable workflows for approved content and business summaries, with human review.', ['Reusable content workflows', 'Source-linked reporting', 'Approval before publication']],
+  ['Websites', '09', 'Custom websites', 'Built around your business.', 'A responsive website shaped around your audience, content, and enquiry journey.', ['Custom interface and development', 'Mobile and desktop layouts', 'Launch checks and handover']],
+  ['Websites', '10', 'WordPress development', 'Flexible content. Considered design.', 'Custom WordPress implementation with an editing experience your team can use.', ['Design and CMS implementation', 'Relevant plugin integrations', 'Editor training and handover']],
+  ['Websites', '11', 'AI feature integration', 'Give your existing product new abilities.', 'Add a focused AI workflow to your website or application, starting with a scoped pilot.', ['Use-case and data review', 'API and application integration', 'Testing and usage controls']],
+  ['Websites', '12', 'Website care', 'Keep the essentials working.', 'Ongoing technical care with an agreed scope, update process, and maintenance schedule.', ['Updates and backups', 'Form and uptime checks', 'Performance maintenance']],
+  ['Audits & advisory', '13', 'Website quality review', 'Know what to fix first.', 'A practical review of your website’s usability, reliability, performance, and technical SEO.', ['Mobile and key-flow review', 'Prioritized findings', 'Implementation roadmap']],
+  ['Audits & advisory', '14', 'Accessibility', 'Make the experience easier to use.', 'Review and remediate against an agreed WCAG target, combining manual checks with automated tools.', ['Keyboard, focus, and forms', 'Contrast and semantic structure', 'Documented fixes and retesting']],
+  ['Audits & advisory', '15', 'Privacy & GDPR readiness', 'Understand and improve data handling.', 'Technical privacy implementation and readiness support. Legal interpretation and sign-off stay with your legal adviser.', ['Tracker and form inventory', 'Consent and script controls', 'Retention and deletion workflows']],
+  ['Audits & advisory', '16', 'AI opportunity review', 'Choose a useful first step.', 'Identify a specific business workflow worth testing, its data needs, and a realistic pilot scope.', ['Workflow discovery', 'Cost and feasibility assessment', 'Pilot success criteria']],
+  ['Audits & advisory', '17', 'AI quality & care', 'Keep the system useful after launch.', 'Evaluate answers, failures, costs, and model changes against an agreed set of checks.', ['Evaluation examples and testing', 'Usage and failure monitoring', 'Scheduled improvements']],
+  ['Audits & advisory', '18', 'AI adoption & training', 'Help your team use AI thoughtfully.', 'Practical training and operating guidance tailored to your team’s workflows and data.', ['Role-specific workshops', 'Data handling and review rules', 'Repeatable working practices']],
+];
+
+export default function Services({ onCall }) {
+  const reducedMotion = useReducedMotion();
+  const [filter, setFilter] = useState('All');
+  const [page, setPage] = useState(0);
+  const [compact, setCompact] = useState(() => matchMedia('(max-width: 700px), (max-height: 650px)').matches);
+  const [shortPhone, setShortPhone] = useState(() => innerWidth <= 700 && innerHeight < 740);
+  const [selected, setSelected] = useState(null);
+  const dialog = useRef(null);
+  const opener = useRef(null);
+  useEffect(() => {
+    const media = matchMedia('(max-width: 700px), (max-height: 650px)');
+    const update = () => { setCompact(media.matches); setShortPhone(innerWidth <= 700 && innerHeight < 740); setPage(0); };
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  const filtered = services.filter(service => filter === 'All' || service[0] === filter);
+  const perPage = shortPhone ? 2 : compact ? 4 : 6;
+  const pages = Math.ceil(filtered.length / perPage);
+  const close = () => { dialog.current.close(); setSelected(null); opener.current?.focus(); };
+  return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`}>
+    <div className="services-heading"><div><span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1></div><p>Development, AI integrations, and technical advice.</p></div>
+    <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
+    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={{ type: 'spring', stiffness: 340, damping: 32 }}>{filtered.slice(page * perPage, (page + 1) * perPage).map(service => <motion.button key={service[1]} className="service-tile" layoutId={`service-${service[1]}`} whileHover={reducedMotion ? undefined : { y: -4, rotate: -0.35, scale: 1.008 }} whileTap={{ scale: 0.98 }} onClick={event => { opener.current = event.currentTarget; setSelected(service); dialog.current.showModal(); }}>
+      <span className="service-number">{service[1]} <span>↗</span></span><ServiceDemo id={service[1]} /><span className="service-category">{service[0]}</span><h2>{service[2]}</h2><p>{service[3]}</p><span className="tile-open">Explore service <span>+</span></span>
+    </motion.button>)}</motion.div>
+    <div className="service-pagination"><span>{filtered.length} services</span><div><button aria-label="Previous services" disabled={page === 0} onClick={() => setPage(value => value - 1)}>←</button><span aria-live="polite">{page + 1} / {pages}</span><button aria-label="Next services" disabled={page === pages - 1} onClick={() => setPage(value => value + 1)}>→</button></div></div>
+    <dialog ref={dialog} className="service-dialog" onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === dialog.current) close(); }}>
+      {selected && <motion.div className="service-expanded" layoutId={compact ? undefined : `service-${selected[1]}`} initial={compact ? { y: 80, opacity: 0 } : false} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 330, damping: 32 }}>
+        <span className="sheet-handle" aria-hidden="true"/><button className="service-close" aria-label="Close service" onClick={close}>×</button><span className="service-category">{selected[0]} / {selected[1]}</span><h2>{selected[2]}</h2><p className="service-description">{selected[4]}</p><span className="goal-label">WHAT WE CAN WORK ON</span><ul>{selected[5].map(item => <li key={item}>{item}</li>)}</ul><div className="service-call"><span>Tell me what you need.<br />We’ll discuss scope and next steps.</span><button className="visit-website" onClick={() => { const name = selected[2]; close(); onCall(name); }}>Get on a call ↗</button></div>
+      </motion.div>}
+    </dialog>
+  </div>;
+}
