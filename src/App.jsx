@@ -25,6 +25,7 @@ function ProjectPoster({ project, index, active }) {
     {active && <BorderTrail radius={13} size={220} />}
     <LivePreview project={project} />
     <div className="reel-caption"><span className="goal-label">THE DEVELOPMENT GOAL</span><TextReveal text={project.goal} play={active} delay={0.12} />
+      <div className="poster-delivered"><b>Delivered</b> {project.buildType}{project.result && <><span aria-hidden="true"> · </span><b>Result</b> {project.result}</>}</div>
       {project.stack && <ul className="stack-chips" aria-label="Technology">{project.stack.split(' · ').map((tech, i) => <li key={tech} style={{ '--i': i }}>{tech}</li>)}</ul>}
       <div className="project-actions" onPointerDown={event => event.stopPropagation()}>
         <button className="project-info-button" aria-label={`About ${project.name}`} onClick={openInfo}><Icon name="info" /> <span>Project info</span></button>

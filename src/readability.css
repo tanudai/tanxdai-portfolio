@@ -41,3 +41,22 @@
   .service-tile h2 { flex: 1; min-width: 0; margin: 0; font-size: 18px; }
   .service-tile p, .service-tile .service-category, .service-open { display: none; }
 }
+
+/* Phone flow caption: the tile stage hides its step labels when small, so the story moves to one line under the description. */
+.service-flow { display: none; }
+@media (max-width: 700px) and (min-height: 861px) {
+  .service-flow { display: flex; flex-wrap: wrap; align-items: center; column-gap: 4px; margin-top: 6px; font-size: var(--text-label); line-height: 1.35; color: var(--ink-quiet); }
+  .service-flow > span { display: inline-flex; align-items: center; gap: 4px; }
+  .service-flow svg { width: 11px; height: 11px; flex-shrink: 0; }
+}
+
+/* Work cards: what was delivered, stated plainly under the goal. */
+.poster-delivered { margin: -14px 0 14px; font-size: var(--text-ui); line-height: 1.4; color: var(--ink-soft); }
+.poster-delivered b { font-weight: 500; font-size: var(--text-label); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-quiet); margin-right: 6px; }
+@media (max-width: 700px), (max-height: 740px) { .poster-delivered { display: none; } }
+
+/* Very short landscape screens: the project poster is ~140px tall, so the goal clamps to two lines to keep the actions inside the card. */
+@media (max-height: 420px) { .reel-caption p { -webkit-line-clamp: 2; } }
+
+/* Phones: the stage is too narrow for readable step labels (they would render near 7px), so the flow caption under the description carries the story. */
+@media (max-width: 700px) { .service-art .lbl { display: none; } }
