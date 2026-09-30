@@ -12,3 +12,13 @@
 .film-segments button:focus-visible{outline:2px solid #b7efcf;outline-offset:2px;border-radius:4px}
 .film-scene-name{font-size:12px;color:#aaa;white-space:nowrap;min-width:78px;text-align:right}
 .film-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Snug (scale 0.6 to 0.75, mid-size windows): drop the two smallest labels, lift the rest to 20px (12px on screen). */
+.film-snug :is(.film-scene-label,.film-pill){display:none}
+.film-snug :is(.film-card dt,.film-kicker,.film-who,.film-note){font-size:20px}
+/* Compact (browser only, scale under 0.6, i.e. phones): drop secondary canvas labels and lift the remaining copy
+   to 38px (about 12px at the smallest 0.32 scale) so nothing reads under 12px on screen. The player's scene name below the film carries the scene title. */
+.film-compact :is(.film-brand,.film-scene-label,.film-pill,.film-kicker,.film-who,.film-card dt,.film-best small){display:none}
+.film-compact .film-card dl>div{display:block}
+.film-compact :is(.film-card dd,.film-card strong,.film-gets li,.film-cta,.film-wordmark,.film-event,.film-note,.film-msg p,.film-best strong){font-size:38px;line-height:1.15}
+.film-compact svg text{display:none}

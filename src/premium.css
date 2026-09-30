@@ -126,3 +126,16 @@
 @media(max-height:500px){.service-tile .service-category{display:none}.service-stage{margin-bottom:8px}}
 @media(max-width:700px) and (max-height:600px){.service-tile p{display:none}}
 @media(max-width:700px){.service-open{display:none}}
+
+/* Contact dialog and popover: readable floor, and fit short screens by dropping secondary lines (never scroll) */
+#contact-dialog{overflow:hidden;max-height:none}
+#contact-dialog .eyebrow{font-size:12px}
+#back-work{font-size:13px}
+@media(max-height:500px){#contact-dialog{padding:20px 24px}#contact-dialog h2{margin:8px 0}#contact-dialog h2 br{display:none}#contact-dialog p:not(.contact-placeholder){display:none}
+  .contact-option small{display:none}.contact-option{padding-top:8px;padding-bottom:8px}}
+/* Project notes on small screens: the type line and the placeholder build-time row go first */
+@media(max-height:600px){.project-dialog-head p,.project-dialog dl>div:nth-child(3){display:none}.project-dialog dl>div:first-child{grid-column:1/-1}}
+@media(max-height:500px){.project-dialog{width:min(780px,calc(100vw - 24px))}.project-dialog-head .goal-label{display:none}.project-dialog-head h2{margin-top:0}
+  .project-dialog dl{grid-template-columns:1.4fr 1fr}.project-dialog dl>div:first-child{grid-column:auto}.project-dialog dl>div:last-child{grid-column:1/-1}
+  .contact-panel-heading{display:none}}
+@media(max-height:500px){.expanding-contact>.contact-option{min-height:0;height:auto;padding:6px 12px}.expanding-contact .contact-option-icon{width:36px;height:36px}}

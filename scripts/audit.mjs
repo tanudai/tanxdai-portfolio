@@ -57,8 +57,23 @@ if (existsSync(browse)) {
         b('click', '[aria-label="Next services"]');
       }
       b('click', '#personal-tab'); measure('personal');
-      b('click', '#work-tab'); b('click', '.react-card:not([aria-hidden=true]) .project-info-button'); measure('project info dialog'); b('press', 'Escape');
-      b('click', '#services-tab'); b('click', '.service-grid > .service-tile:first-child'); measure('service dialog'); b('press', 'Escape');
+      b('click', '#work-tab');
+      for (let n = 1; n <= projects.length; n++) {
+        b('click', `.project-filmstrip button:nth-child(${n})`); execFileSync('sleep', ['0.8']);
+        b('click', '.react-card:not([aria-hidden=true]) .project-info-button'); measure(`project #${n} notes`); b('press', 'Escape');
+      }
+      b('click', '#services-tab');
+      for (const [pageClicks, nth, id] of [[0, 1, '01'], [1, 5, '11'], [2, 3, '15']]) { // first card and the two longest
+        b('click', '#services-tab'); b('click', '#work-tab'); b('click', '#services-tab'); execFileSync('sleep', ['0.5']);
+        const perPage = Number(b('js', 'document.querySelectorAll(".service-grid > .service-tile").length').replace(/\D+/g, ' ').trim().split(' ').pop());
+        const index = Number(id) - 1, target = Math.floor(index / perPage);
+        for (let k = 0; k < target; k++) b('click', '[aria-label="Next services"]');
+        b('click', `.service-grid > .service-tile:nth-child(${index % perPage + 1})`); execFileSync('sleep', ['1']);
+        measure(`service ${id} card`); b('press', 'Escape'); execFileSync('sleep', ['0.8']);
+      }
+      b('click', '#contact-button'); measure('contact popover'); b('press', 'Escape');
+      b('click', '.status-capsule'); measure('studio popover'); b('press', 'Escape');
+      b('click', '#personal-tab'); b('click', '.bento-collab button'); measure('contact dialog'); b('press', 'Escape');
     }
     fit = 'ran';
   } catch (error) { fit = 'errored'; failures.push(`fit check could not run against ${url}: ${error.message.split('\n')[0]}`); }

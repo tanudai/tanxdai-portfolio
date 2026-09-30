@@ -13,6 +13,16 @@
     const { overflowX, overflowY } = getComputedStyle(el);
     return (/auto|scroll/.test(overflowY) && el.scrollHeight > el.clientHeight + 1) || (/auto|scroll/.test(overflowX) && el.scrollWidth > el.clientWidth + 1);
   }).map(el => `scrolls:${el.id || el.className.toString().split(' ')[0] || el.tagName}`);
+  // Open dialogs and popovers clip (overflow hidden) rather than scroll, so check they fit on screen and cut nothing off.
+  const clipped = [...document.querySelectorAll('.project-dialog[open], .service-expanded, #contact-dialog[open], :popover-open')].filter(box => {
+    const r = box.getBoundingClientRect();
+    if (r.top < -1 || r.left < -1 || r.bottom > innerHeight + 1 || r.right > innerWidth + 1) return true;
+    return [...box.querySelectorAll('*')].some(child => {
+      if (child.closest('[data-decorative], .film-screen, .sr-only, .film-sr')) return false;
+      const b = child.getBoundingClientRect();
+      return b.height && (b.bottom > r.bottom + 1 || b.right > r.right + 1);
+    });
+  }).map(box => `clipped:${box.id || box.className.toString().split(' ')[0]}`);
   const page = document.documentElement.scrollHeight > innerHeight + 1 ? ['page scrolls'] : [];
-  return [...escaped, ...scrolls, ...page].join(', ') || 'ok';
+  return [...escaped, ...scrolls, ...clipped, ...page].join(', ') || 'ok';
 })()

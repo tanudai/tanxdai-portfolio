@@ -70,7 +70,7 @@ export default function FilmPlayer({ id, startDelay = 0, at }) {
   const toggle = () => { if (ended) { setT(0); setPlaying(true); } else setPlaying(value => !value); };
   const current = plan.scenes.reduce((idx, scene, i) => (t >= scene.start ? i : idx), 0);
 
-  return <figure className="film-player" aria-label={`${film.name}: explainer`}>
+  return <figure className={`film-player${scale && scale < 0.6 ? ' film-compact' : scale && scale < 0.75 ? ' film-snug' : ''}`} aria-label={`${film.name}: explainer`}>
     <div className="film-screen" ref={box}>
       <div className="film-scaler" style={{ transform: `scale(${scale})`, visibility: scale ? 'visible' : 'hidden' }} aria-hidden="true"><Film film={film} t={t} plan={plan} /></div>
     </div>
