@@ -20,11 +20,3 @@ export function ContactDock({ onContact }) {
     </div>
   </div>;
 }
-
-const flows = [
- ['Enquiry','Qualified lead'],['Brief','Quote draft'],['Documents','Cited answer'],['Invoice','Data rows'],['Question','Reply draft'],['New lead','Follow-up'],['Needs','Product match'],['Sources','Content draft'],['Idea','Website'],['Content','Published page'],['Your app','AI feature'],['Check','Maintained'],['Review','Action plan'],['Keyboard','Clear focus'],['Data','Consent'],['Workflow','Pilot plan'],['Evaluate','Improve'],['Learn','Put to work'],
-];
-export function ServiceDemo({ id }) {
- const [from,to] = flows[Number(id)-1];
- return <span className="service-demo" aria-hidden="true"><span className="demo-source"><i/><i/><i/><small>{from}</small></span><span className="demo-path"><i/></span><span className="demo-result"><b>✓</b><small>{to}</small></span></span>;
-}

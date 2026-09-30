@@ -15,7 +15,7 @@ const CHARS_PER_LINE = 30;
 export function beatHeight(step) {
   if (step.type === 'msg') return 92 + 44 * Math.ceil(step.text.length / CHARS_PER_LINE);
   if (step.type === 'event') return 78;
-  if (step.type === 'card') { const r = Math.ceil(step.rows.length / 2); return 88 + r * 62 + 14 * (r - 1); }
+  if (step.type === 'card') return 86 + step.rows.length * 44; // one row per fact: 36px value line + 8px gap
   return 20 + 46 * Math.ceil(step.text.length / 26); // done: 38px text beside the check
 }
 export const TYPING_HEIGHT = 70;

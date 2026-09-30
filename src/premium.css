@@ -82,3 +82,47 @@
 @media(max-width:700px) and (max-height:700px){.bento-tags span:nth-child(n+4){display:none}}
 @media(max-width:700px) and (max-height:600px){.bento-tags span:nth-child(n+3){display:none}}
 @media(max-width:700px) and (max-height:600px){.bento-services{display:none}.bento-work{grid-column:span 12}}
+
+/* Service card with its film: side by side on wide screens, film first on phones; never scrolls */
+.service-dialog .service-expanded{width:min(1120px,100%);padding:0;background:#141414;border:1px solid #303030}
+.service-expanded-body{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:28px;padding:28px;align-items:start}
+.service-film-loading{aspect-ratio:16/10;border-radius:16px;background:#0c0c0c;border:1px solid #2a2a2a}
+.service-info h2{margin:10px 0 12px;font-size:clamp(24px,2.4vw,34px);line-height:1.1;padding-right:48px}
+.service-info .service-description{font-size:15px;line-height:1.5;margin:0 0 16px}
+.service-info ul{margin:8px 0 18px}
+.service-info li{padding:9px 0;font-size:14px}
+.service-expanded .service-close{position:absolute;top:18px;right:18px;z-index:2;display:grid;place-items:center;border-radius:12px;border:1px solid #333;background:#101010;color:#f3f3f3;font-size:18px}
+@media(max-width:900px),(max-height:640px){
+  .service-expanded-body{grid-template-columns:1fr;gap:14px;padding:18px}
+  .service-info .service-description,.service-info .goal-label,.service-info ul{display:none}
+  .service-info h2{margin:4px 0 12px}
+  .service-dialog .service-expanded{width:min(640px,100%)}
+}
+@media(max-height:500px) and (min-width:560px){
+  .service-expanded-body{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:center}
+  .service-dialog .service-expanded{width:min(900px,100%)}
+  .service-call>span{display:none}
+}
+@media(max-width:559px){
+  .service-info{display:contents}
+  .service-info .service-category,.service-info h2{order:-1}
+  .service-info h2{margin:0 0 4px;padding-right:56px}
+  .service-film{order:0}
+  .service-call{order:1}
+  .service-expanded .service-close{top:14px;right:14px}
+}
+
+/* Service tiles lead with their animated scene: an inset stage takes all spare height at every size */
+.service-tile{gap:0;justify-content:flex-start}
+.service-stage{position:relative;display:grid;place-items:center;flex:1 1 0;min-height:44px;max-height:170px;margin:0 0 14px;border-radius:12px;border:1px solid #262626;
+  background:radial-gradient(120% 90% at 50% 0%,#1c1c1c,#111 70%);overflow:hidden}
+.service-art{display:block;width:100%;height:100%;padding:6px 10px}
+.service-open{position:absolute;top:8px;right:8px;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;border:1px solid #2e2e2e;background:#141414;color:#aaa;font-size:14px;
+  transition:color var(--dur-quick) var(--ease-enter),border-color var(--dur-quick) var(--ease-enter),transform var(--dur-base) var(--ease-enter)}
+.service-tile:is(:hover,:focus-visible) .service-open{color:var(--color-mint);border-color:#b7efcf66;transform:translate(2px,-2px)}
+.service-tile .service-category{margin:0 0 2px}
+.service-tile h2{margin:6px 0}
+@media(max-width:700px) and (max-height:740px){.service-tile .service-category{display:none}.service-stage{min-height:36px;margin-bottom:8px}.service-tile h2{margin:2px 0 4px}}
+@media(max-height:500px){.service-tile .service-category{display:none}.service-stage{margin-bottom:8px}}
+@media(max-width:700px) and (max-height:600px){.service-tile p{display:none}}
+@media(max-width:700px){.service-open{display:none}}
