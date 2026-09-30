@@ -1,0 +1,43 @@
+/* Readability layer: one typographic scale for text on tabs, filters and cards.
+   Sits after premium.css in the components layer, so it replaces the scattered per-breakpoint size overrides.
+   Floors: labels 12px, UI text 13px, body 14px. Text contrast stays at or above 4.5:1 (WCAG 2.2 AA).
+   Nothing here adds height that could make a view scroll: line-heights only tighten or match what rendered before. */
+:root {
+  --text-label: 12px;
+  --text-ui: 13px;
+  --text-body: 14px;
+  --ink-soft: #b4b4b4;   /* body copy on cards, 9:1 on #191919 */
+  --ink-quiet: #9d9d9d;  /* counts and metadata, 6:1 on #191919; replaces the 2.85:1 tab counts */
+}
+
+/* Tabs: a touch larger on desktop, tabular counts with a readable chip. */
+.top-tabs button { font-size: 15px; line-height: 1.2; letter-spacing: .005em; }
+.top-tabs small { font-size: var(--text-label); line-height: 1.2; color: var(--ink-quiet); background: #ffffff0f; font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) { .top-tabs button { font-size: var(--text-ui); } }
+
+/* Eyebrows and card categories: wide tracking in em so it scales, calmer colour. */
+.deck-eyebrow, .service-category { font-size: var(--text-label); line-height: 1.35; letter-spacing: .12em; color: var(--ink-quiet); }
+.service-category b { font-weight: inherit; color: var(--color-ink); }
+.service-group { white-space: nowrap; }
+@media (max-width: 700px) { .service-group { display: none; } }
+
+/* Section subhead and filters. */
+.services-heading p { font-size: var(--text-body); line-height: 1.5; color: var(--ink-soft); }
+.service-filters button { font-size: var(--text-ui); line-height: 1.2; }
+
+/* Card text: titles balance across lines, tracking in em so phone sizes are not over-tightened, body gets a steady rhythm. */
+.service-tile h2 { line-height: 1.2; letter-spacing: -.015em; text-wrap: balance; }
+.service-tile p { font-size: var(--text-body); line-height: 1.5; color: var(--ink-soft); text-wrap: pretty; }
+.service-pagination, .service-pagination > span, .service-pagination div span { font-size: var(--text-label); font-variant-numeric: tabular-nums; }
+
+/* Tile-stage captions (SVG text): a readable size, no wrapping into the neighbour. */
+.service-art .lbl { font-weight: 500; letter-spacing: .01em; }
+
+/* Short landscape phones (e.g. 667x375): tiles are about 58px tall, so they become a row with the flow on the left and the title on the right.
+   Previously the title spilled out of the tile. */
+@media (max-height: 480px) and (min-width: 560px) {
+  .service-tile { flex-direction: row; align-items: center; gap: 12px; padding: 8px 12px; }
+  .service-stage { flex: 0 0 48%; align-self: stretch; height: auto; min-height: 0; max-height: none; margin: 0; }
+  .service-tile h2 { flex: 1; min-width: 0; margin: 0; font-size: 18px; }
+  .service-tile p, .service-tile .service-category, .service-open { display: none; }
+}

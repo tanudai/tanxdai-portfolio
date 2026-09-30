@@ -8,6 +8,7 @@
 @import "./react.css" layer(legacy);
 @import "./workspace.css" layer(legacy);
 @import "./premium.css" layer(components);
+@import "./readability.css" layer(components);
 
 @theme static {
   --font-sans: 'DM Sans', sans-serif;
