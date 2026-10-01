@@ -61,6 +61,26 @@ export function useMagnetic(strength = 0.22, max = 8) {
   };
 }
 
+// 3D tilt effect for cards. Returns props for a motion element.
+export function useTilt(strength = 15) {
+  const rotateX = useSpring(useMotionValue(0), spring.ui);
+  const rotateY = useSpring(useMotionValue(0), spring.ui);
+  const reduced = useReducedMotion();
+  if (reduced) return {};
+  return {
+    style: { rotateX, rotateY, transformPerspective: 800 },
+    onPointerMove: event => {
+      if (event.pointerType !== 'mouse') return;
+      const box = event.currentTarget.getBoundingClientRect();
+      const xPct = (event.clientX - box.left) / box.width - 0.5;
+      const yPct = (event.clientY - box.top) / box.height - 0.5;
+      rotateX.set(-yPct * strength);
+      rotateY.set(xPct * strength);
+    },
+    onPointerLeave: () => { rotateX.set(0); rotateY.set(0); },
+  };
+}
+
 // Signature: cursor spotlight. One listener feeds --spot-x/--spot-y to whichever .spotlight card is under the pointer.
 export function trackSpotlight() {
   const move = event => {

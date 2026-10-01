@@ -30,6 +30,40 @@ export const services = [
   ['Audits & advisory', '18', 'AI adoption & training', 'Help your team use AI thoughtfully.', 'Practical training and operating guidance tailored to your team’s workflows and data.', ['Role-specific workshops', 'Data handling and review rules', 'Repeatable working practices']],
 ];
 
+import { useMagnetic, useTilt } from './components/motion-kit.jsx';
+
+function ServiceTile({ service, i, hovered, setHovered, setSelected, opener, loadFilm, reducedMotion }) {
+  const tilt = useTilt(10);
+  const magnetic = useMagnetic(0.3, 12);
+
+  const handlePointerMove = e => {
+    tilt.onPointerMove?.(e);
+  };
+  const handlePointerLeave = e => {
+    tilt.onPointerLeave?.(e);
+  };
+
+  return <motion.button className="service-tile spotlight" 
+    onHoverStart={() => { setHovered(service[1]); loadFilm(); }} 
+    onHoverEnd={() => setHovered(null)} 
+    onFocus={() => { setHovered(service[1]); loadFilm(); }} 
+    onBlur={() => setHovered(null)} 
+    layoutId={`service-${service[1]}`} 
+    whileHover={reducedMotion ? undefined : { y: -4, scale: 1.008 }} 
+    whileTap={{ scale: 0.98 }} 
+    style={{ borderRadius: 16, ...tilt.style }} 
+    onPointerMove={handlePointerMove}
+    onPointerLeave={handlePointerLeave}
+    transition={spring.sheet} 
+    onClick={event => { opener.current = event.currentTarget; setSelected(service); }}>
+    <span className="service-stage">
+      <ServiceArt id={service[1]} active={hovered === service[1]} delay={0.1 + i * 0.07} />
+      <motion.span className="service-open" {...magnetic} onPointerDown={e => e.stopPropagation()}><Icon name="arrowUpRight" /></motion.span>
+    </span>
+    <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span></span><h2>{service[2]}</h2><p>{service[3]}</p><span className="service-flow">{flowSteps(service[1]).map((label, n) => <span key={label}>{n > 0 && <Icon name="arrowRight" />}{label}</span>)}</span>
+  </motion.button>;
+}
+
 export default function Services({ onCall, initialFilter = 'All' }) {
   const reducedMotion = useReducedMotion();
   const [filter, setFilter] = useState(initialFilter);
@@ -65,10 +99,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`}>
     <div className="services-heading"><div><span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1></div><p>Development, AI integrations, and technical advice.</p></div>
     <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
-    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>{filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <motion.button key={service[1]} className="service-tile spotlight" onHoverStart={() => { setHovered(service[1]); loadFilm(); }} onHoverEnd={() => setHovered(null)} onFocus={() => { setHovered(service[1]); loadFilm(); }} onBlur={() => setHovered(null)} layoutId={`service-${service[1]}`} whileHover={reducedMotion ? undefined : { y: -4, rotate: -0.35, scale: 1.008 }} whileTap={{ scale: 0.98 }} style={{ borderRadius: 16 }} transition={spring.sheet} onClick={event => { opener.current = event.currentTarget; setSelected(service); }}>
-      <span className="service-stage"><ServiceArt id={service[1]} active={hovered === service[1]} delay={0.1 + i * 0.07} /><span className="service-open"><Icon name="arrowUpRight" /></span></span>
-      <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span></span><h2>{service[2]}</h2><p>{service[3]}</p><span className="service-flow">{flowSteps(service[1]).map((label, n) => <span key={label}>{n > 0 && <Icon name="arrowRight" />}{label}</span>)}</span>
-    </motion.button>)}</motion.div>
+    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>{filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} />)}</motion.div>
     <div className="service-pagination"><span>{filtered.length} services</span><div><button aria-label="Previous services" disabled={page === 0} onClick={() => setPage(value => value - 1)}><Icon name="arrowLeft" /></button><span aria-live="polite">{page + 1} / {pages}</span><button aria-label="Next services" disabled={page === pages - 1} onClick={() => setPage(value => value + 1)}><Icon name="arrowRight" /></button></div></div>
     <dialog ref={dialog} className="service-dialog" aria-label={selected ? selected[2] : 'Service'} onCancel={event => { event.preventDefault(); close(); }}>
       <AnimatePresence onExitComplete={landed}>

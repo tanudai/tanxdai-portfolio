@@ -8,9 +8,56 @@ import { StatusCapsule, ContactDock, ContactActions } from './AppDetails.jsx';
 import Icon from './Icons.jsx';
 import PhysicsPile from './components/PhysicsPile.jsx';
 import MemojiAvatar from './components/MemojiAvatar.jsx';
-import { BorderTrail, TextReveal, trackSpotlight, useMagnetic } from './components/motion-kit.jsx';
+import { BorderTrail, TextReveal, trackSpotlight, useMagnetic, useTilt } from './components/motion-kit.jsx';
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
+
+function CustomCursor() {
+  const reduced = useReducedMotion();
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [clicked, setClicked] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  
+  useEffect(() => {
+    if (reduced || matchMedia('(pointer: coarse)').matches) return;
+    const move = e => setPosition({ x: e.clientX, y: e.clientY });
+    const down = () => setClicked(true);
+    const up = () => setClicked(false);
+    const checkHover = e => {
+      const target = e.target;
+      if (target.closest('button, a, input, [role="button"], [role="tab"]')) setHovered(true);
+      else setHovered(false);
+    };
+    
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointermove', checkHover);
+    window.addEventListener('pointerdown', down);
+    window.addEventListener('pointerup', up);
+    return () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointermove', checkHover);
+      window.removeEventListener('pointerdown', down);
+      window.removeEventListener('pointerup', up);
+    };
+  }, [reduced]);
+
+  if (reduced || matchMedia('(pointer: coarse)').matches) return null;
+
+  return <motion.div className="custom-cursor" 
+    animate={{ 
+      x: position.x - 10, y: position.y - 10, 
+      scale: clicked ? 0.8 : hovered ? 1.5 : 1,
+      backgroundColor: hovered ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.8)',
+      mixBlendMode: hovered ? 'difference' : 'normal',
+      border: hovered ? '1px solid rgba(255, 255, 255, 0.5)' : 'none'
+    }} 
+    transition={{ type: 'spring', damping: 25, stiffness: 200, mass: 0.1 }}
+    style={{
+      position: 'fixed', top: 0, left: 0, width: 20, height: 20, borderRadius: '50%', 
+      pointerEvents: 'none', zIndex: 9999
+    }} 
+  />;
+}
 
 function ProjectPoster({ project, index, active }) {
   const info = useRef(null);
@@ -151,14 +198,15 @@ function ProjectDeck({ enabled }) {
 }
 
 function Personal({ onWork, onServices, onContact }) {
+  const avatarTilt = useTilt(20);
   return <div className="personal-bento">
     <article className="bento-intro"><span className="bento-label">DESIGN & DEVELOPMENT</span><h1>Hey, I’m Tanxdai<span>.</span></h1><p>Web developer · AI & automation</p></article>
-    <div className="bento-avatar"><MemojiAvatar /><span>Hello <Icon name="arrowUpRight" /></span></div>
+    <motion.div className="bento-avatar" {...avatarTilt}><MemojiAvatar /><motion.span {...useMagnetic()}>Hello <Icon name="arrowUpRight" /></motion.span></motion.div>
     <div className="bento-shortcuts" aria-label="Explore my work"><button onClick={onWork}><span><Icon name="arrowUpRight" /></span>Projects</button><button onClick={() => onServices()}><span><Icon name="sparkle" /></span>Services</button><button onClick={onContact}><span><Icon name="at" /></span>Say hello</button><button onClick={() => onServices('Websites')}><span><Icon name="code" /></span>Development</button><button onClick={() => onServices('AI & automation')}><span><Icon name="layers" /></span>AI & more</button></div>
     <button className="bento-work" onClick={onWork}><span className="bento-card-top">Selected work <span><Icon name="arrowUpRight" /></span></span><div className="bento-previews">{[projects[0], projects[1], projects[4]].map((project, index) => <img key={project.name} src={project.image} alt={project.name} style={{ '--order': index }} />)}</div><span className="bento-footnote">Selected client projects</span></button>
     <article className="bento-services"><button type="button" className="bento-card-top bento-card-link" onClick={() => onServices()}>What I can help with <span><Icon name="arrowUpRight" /></span></button><PhysicsPile label="What I can help with" variant="chip" items={['Custom websites', 'AI workflows', 'WordPress', 'Automation', 'Audits', 'Consulting'].map(tag => ({ key: tag, node: tag }))} /></article>
     <article className="bento-tools"><span className="bento-label">MY TOOLKIT</span><PhysicsPile label="My toolkit" variant="tile" items={[['React', 'Re'], ['Python', 'Py'], ['AI tools', 'AI'], ['TypeScript', 'TS'], ['Astro', 'A'], ['WordPress', 'W'], ['Motion', 'M']].map(([name, mark]) => ({ key: name, node: <><b>{mark}</b><small>{name}</small></> }))} /></article>
-    <article className="bento-collab"><span className="bento-label">HAVE A PROJECT IN MIND?</span><h2>Let’s work<br />{' '}together.</h2><p>Websites, applications, and AI integrations.</p><button onClick={onContact}>Let’s collaborate <span><Icon name="arrowUpRight" /></span></button></article>
+    <article className="bento-collab"><span className="bento-label">HAVE A PROJECT IN MIND?</span><h2>Let’s work<br />{' '}together.</h2><p>Websites, applications, and AI integrations.</p><motion.button onClick={onContact} {...useMagnetic()}>Let’s collaborate <span><Icon name="arrowUpRight" /></span></motion.button></article>
   </div>;
 }
 
@@ -178,7 +226,7 @@ export default function App() {
   }, [tab]);
   useEffect(() => { const timer = setInterval(() => setTime(formatTime()), 60000); return () => clearInterval(timer); }, []);
   useEffect(trackSpotlight, []);
-  return <><div className="ambient" aria-hidden="true" />
+  return <><div className="ambient" aria-hidden="true" /><CustomCursor />
     <header><a href="/" className="wordmark">tanxdai<span aria-hidden="true">®</span></a><StatusCapsule time={time} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></header>
     <div className="workspace-shell"><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { setTab(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
     <main data-active-view={tab}><section id="work-panel" role="tabpanel" aria-labelledby="work-tab" hidden={tab !== 'work'} aria-label="Selected work"><ProjectDeck enabled={tab === 'work'} /></section><section id="services-panel" role="tabpanel" aria-labelledby="services-tab" hidden={tab !== 'services'} aria-label="Services">{tab === 'services' && <Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} />}</section><section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" hidden={tab !== 'personal'} aria-label="Personal side"><Personal onWork={() => setTab('work')} onServices={(filter = 'All') => { setServiceFilter(filter); setTab('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></section></main></div>
