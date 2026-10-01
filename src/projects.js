@@ -80,7 +80,7 @@ export const projects = [
     roleNote: 'Helped integrate the AI chat for Pastreez.',
     duration: '4–6 weeks',
     liveUrl: 'https://chatting.page/pastreez',
-    image: null, mobileImage: null,
+    image: '/projects/pastreez-desktop.webp', mobileImage: '/projects/pastreez-mobile.webp',
   },
   {
     name: 'Bowood by Niche',
@@ -90,7 +90,7 @@ export const projects = [
     roleNote: 'Helped integrate Pentacle onto their website.',
     duration: '4–6 weeks',
     liveUrl: 'https://bowoodbyniche.com/',
-    image: null, mobileImage: null,
+    image: '/projects/bowood-by-niche-desktop.webp', mobileImage: '/projects/bowood-by-niche-mobile.webp',
   },
   {
     name: 'Katie UGC',
@@ -100,6 +100,6 @@ export const projects = [
     roleNote: 'Worked on the Katie UGC website.',
     duration: '4–6 weeks',
     liveUrl: 'https://katieugc.my.canva.site/',
-    image: null, mobileImage: null,
+    image: '/projects/katie-ugc-desktop.webp', mobileImage: '/projects/katie-ugc-mobile.webp',
   },
 ];
