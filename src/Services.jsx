@@ -67,40 +67,22 @@ function ServiceTile({ service, i, hovered, setHovered, setSelected, opener, loa
 export default function Services({ onCall, initialFilter = 'All' }) {
   const reducedMotion = useReducedMotion();
   const [filter, setFilter] = useState(initialFilter);
-  const [page, setPage] = useState(0);
-  const [compact, setCompact] = useState(() => matchMedia('(max-width: 700px), (max-height: 650px)').matches);
-  const [shortPhone, setShortPhone] = useState(() => innerWidth <= 700 && innerHeight < 740);
   const [selected, setSelected] = useState(null);
   const [hovered, setHovered] = useState(null);
   const dialog = useRef(null);
   const opener = useRef(null);
-  const touchX = useRef(null);
-  useEffect(() => {
-    const media = matchMedia('(max-width: 700px), (max-height: 650px)');
-    const update = () => { setCompact(media.matches); setShortPhone(innerWidth <= 700 && innerHeight < 740); setPage(0); };
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
+  
   const filtered = services.filter(service => filter === 'All' || service[0] === filter);
-  const perPage = shortPhone ? 2 : compact ? 4 : 6;
-  const pages = Math.ceil(filtered.length / perPage);
-  const handleTouchStart = e => { touchX.current = e.touches[0].clientX; };
-  const handleTouchEnd = e => {
-    if (touchX.current === null) return;
-    const diff = touchX.current - e.changedTouches[0].clientX;
-    if (diff > 50 && page < pages - 1) setPage(p => p + 1);
-    else if (diff < -50 && page > 0) setPage(p => p - 1);
-    touchX.current = null;
-  };
+  
   // The card flies from its tile into the dialog and back: the dialog stays open until the return flight lands.
   const close = () => setSelected(null);
   useLayoutEffect(() => { if (selected && !dialog.current.open) dialog.current.showModal(); }, [selected]); // same frame as the click
   const landed = () => { dialog.current?.close(); opener.current?.focus(); };
-  return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`}>
+  
+  return <div className="services-app">
     <div className="services-heading"><div><span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1></div><p>Development, AI integrations, and technical advice.</p></div>
-    <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
-    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>{filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} />)}</motion.div>
-    <div className="service-pagination"><span>{filtered.length} services</span><div><button aria-label="Previous services" disabled={page === 0} onClick={() => setPage(value => value - 1)}><Icon name="arrowLeft" /></button><span aria-live="polite">{page + 1} / {pages}</span><button aria-label="Next services" disabled={page === pages - 1} onClick={() => setPage(value => value + 1)}><Icon name="arrowRight" /></button></div></div>
+    <div className="service-filters" aria-label="Filter services" style={{ position: 'sticky', top: 0, zIndex: 10, background: '#101010', paddingBottom: '10px' }}>{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => setFilter(group)}>{group}</button>)}</div>
+    <motion.div key={filter} className="service-grid" initial={reducedMotion ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={spring.page} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>{filtered.map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} />)}</motion.div>
     <dialog ref={dialog} className="service-dialog" aria-label={selected ? selected[2] : 'Service'} onCancel={event => { event.preventDefault(); close(); }}>
       <AnimatePresence onExitComplete={landed}>
         {selected && <motion.div key="scrim" className="service-scrim" onClick={close} initial={{ opacity: 0 }}
