@@ -1,8 +1,8 @@
 // Contact details. Fill these in to switch the contact actions on across the site (header "Let's talk", the call dialog, service cards).
 // Until a value is set, its action shows an honest "coming soon" note instead of a dead link.
 export const contact = {
-  whatsapp: null, // international number, digits only, e.g. '919876543210'
-  email: null,    // e.g. 'hello@yourdomain.com'
+  whatsapp: '918826824080', // international number, digits only, e.g. '919876543210'
+  email: 'consult@tanxdai.info',    // e.g. 'hello@yourdomain.com'
   booking: null,  // a scheduling link, e.g. 'https://cal.com/your-name/intro'
 };
 
