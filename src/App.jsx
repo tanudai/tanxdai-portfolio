@@ -9,6 +9,7 @@ import Icon from './Icons.jsx';
 import PhysicsPile from './components/PhysicsPile.jsx';
 import MemojiAvatar from './components/MemojiAvatar.jsx';
 import { BorderTrail, TextReveal, trackSpotlight, useMagnetic, useTilt } from './components/motion-kit.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 
@@ -200,7 +201,11 @@ export default function App() {
   const tabBar = useRef(null);
   const [surface, setSurface] = useState(null);
   useLayoutEffect(() => {
-    const measure = () => { const active = tabBar.current.querySelector(`[data-tab="${tab}"]`); setSurface({ x: active.offsetLeft, y: active.offsetTop, width: active.offsetWidth, height: active.offsetHeight }); };
+    const measure = () => {
+      const active = tabBar.current?.querySelector?.(`[data-tab="${tab}"]`);
+      if (!active) return;
+      setSurface({ x: active.offsetLeft, y: active.offsetTop, width: active.offsetWidth, height: active.offsetHeight });
+    };
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
@@ -222,11 +227,13 @@ export default function App() {
     <header><a href="/" className="wordmark">tanxdai<span aria-hidden="true">®</span></a><StatusCapsule time={time} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></header>
     <div className="workspace-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : Math.max(0, Math.min(tabs.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1))); if (next === index) return; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { handleTabChange(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
     <main>
-      <section id="work-panel" role="tabpanel" aria-labelledby="work-tab" hidden={tab !== 'work'} aria-label="Selected work"><ProjectDeck enabled={tab === 'work'} /></section>
-      <section id="services-panel" role="tabpanel" aria-labelledby="services-tab" hidden={tab !== 'services'} aria-label="Services">{tab === 'services' && <Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} />}</section>
-      <section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" hidden={tab !== 'personal'} aria-label="Personal side">{tab === 'personal' && <Personal onWork={() => handleTabChange('work')} onServices={(filter = 'All') => { setServiceFilter(filter); handleTabChange('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} />}</section>
+      <ErrorBoundary resetKey={tab}>
+        <section id="work-panel" role="tabpanel" aria-labelledby="work-tab" hidden={tab !== 'work'} aria-label="Selected work"><ProjectDeck enabled={tab === 'work'} /></section>
+        <section id="services-panel" role="tabpanel" aria-labelledby="services-tab" hidden={tab !== 'services'} aria-label="Services">{tab === 'services' && <Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} />}</section>
+        <section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" hidden={tab !== 'personal'} aria-label="Personal side">{tab === 'personal' && <Personal onWork={() => handleTabChange('work')} onServices={(filter = 'All') => { setServiceFilter(filter); handleTabChange('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} />}</section>
+      </ErrorBoundary>
     </main></div>
     <footer><span>TANXDAI © 2026</span><span>A LITTLE INTENTION. A LITTLE PLAY.</span></footer>
-    <dialog ref={contact} id="contact-dialog"><button id="close-contact" aria-label="Close contact" onClick={() => contact.current.close()}><Icon name="close" /></button><span className="eyebrow">CONTACT</span><h2>Discuss your<br />project.</h2><p>{callTopic ? `Let's talk about ${callTopic.toLowerCase()}.` : 'Let's talk about your next project.'}</p><div className="contact-dialog-actions"><ContactActions key={callTopic} topic={callTopic} /></div><button id="back-work" onClick={() => contact.current.close()}>Back to exploring <Icon name="arrowUpRight" /></button></dialog>
+    <dialog ref={contact} id="contact-dialog"><button id="close-contact" aria-label="Close contact" onClick={() => contact.current.close()}><Icon name="close" /></button><span className="eyebrow">CONTACT</span><h2>Discuss your<br />project.</h2><p>{callTopic ? `Let’s talk about ${callTopic.toLowerCase()}.` : 'Let’s talk about your next project.'}</p><div className="contact-dialog-actions"><ContactActions key={callTopic} topic={callTopic} /></div><button id="back-work" onClick={() => contact.current.close()}>Back to exploring <Icon name="arrowUpRight" /></button></dialog>
   </>;
 }

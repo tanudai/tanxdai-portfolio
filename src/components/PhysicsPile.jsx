@@ -32,7 +32,7 @@ export default function PhysicsPile({ items, variant = 'chip', label }) {
       dispose();
       dispose = () => {};
       if (width < 40 || height < 40) return;
-      import('matter-js').then(({ default: Matter }) => { if (alive && key === next) dispose = start(Matter, root, nodes.current, reduced, label); });
+      import('matter-js').then(({ default: Matter }) => { if (alive && key === next) dispose = start(Matter, root, nodes.current, reduced, label); }).catch(() => {});
     });
     observer.observe(root);
     return () => { alive = false; observer.disconnect(); dispose(); };
@@ -52,13 +52,14 @@ function start(Matter, root, els, reduced, label) {
 
   // Keep as many blocks as fit comfortably (list order is priority order): within the area budget, and within the rows the height allows.
   let area = 0, rowWidth = 0, tallest = 0, shown = 0;
-  const sizes = els.map(el => { el.style.display = ''; return [el.offsetWidth, el.offsetHeight]; });
+  const validEls = els.filter(Boolean);
+  const sizes = validEls.map(el => { el.style.display = ''; return [el.offsetWidth, el.offsetHeight]; });
   sizes.forEach(([w, h], i) => {
     area += (w + 4) * (h + 4); rowWidth += w + 6; tallest = Math.max(tallest, h);
     const rows = Math.ceil(rowWidth / (W * 0.9));
     if ((area <= W * H * FILL && rows * tallest <= H) || i < 1) shown = i + 1;
   });
-  els.forEach((el, i) => { el.style.display = i < shown ? '' : 'none'; });
+  validEls.forEach((el, i) => { el.style.display = i < shown ? '' : 'none'; });
 
   const wall = (x, y, w, h) => Bodies.rectangle(x, y, w, h, { isStatic: true, friction: 0.6 });
   Composite.add(engine.world, [wall(W / 2, H + 30, W * 4, 60), wall(-30, H / 2 - H * 2, 60, H * 6), wall(W + 30, H / 2 - H * 2, 60, H * 6)]);
@@ -68,9 +69,9 @@ function start(Matter, root, els, reduced, label) {
   const lanes = Math.max(1, Math.floor(W / (sizes.slice(0, shown).reduce((a, [w]) => a + w, 0) / Math.max(1, shown) + 8)));
   let y = -10;
   for (let i = 0; i < shown; i++) {
-    const [w, h] = sizes[i];
+    const [w, h] = sizes[i] || [40, 20];
     y -= h * 1.15;
-    const round = els[i].classList.contains('phys-chip') ? h / 2 : 12;
+    const round = validEls[i]?.classList?.contains('phys-chip') ? h / 2 : 12;
     const x = Math.min(W - w / 2, Math.max(w / 2, W * (((i % lanes) + 0.5) / lanes) + (rand() - 0.5) * 24)); // spread across lanes, then pile on top
     const body = Bodies.rectangle(x, y, w, h, { chamfer: { radius: Math.min(round, h / 2) }, angle: (rand() - 0.5) * 1.1, restitution: 0.22, friction: 0.5, frictionAir: 0.012, density: 0.002, slop: 0.02 });
     bodies.push(body);
@@ -78,11 +79,13 @@ function start(Matter, root, els, reduced, label) {
   Composite.add(engine.world, bodies);
 
   const paint = () => bodies.forEach((body, i) => {
+    const el = validEls[i];
+    if (!el || !sizes[i]) return;
     const [w, h] = sizes[i];
-    els[i].style.transform = `translate3d(${body.position.x - w / 2}px,${body.position.y - h / 2}px,0) rotate(${body.angle}rad)`;
-    els[i].style.opacity = 1;
+    el.style.transform = `translate3d(${body.position.x - w / 2}px,${body.position.y - h / 2}px,0) rotate(${body.angle}rad)`;
+    el.style.opacity = 1;
   });
-  const reset = () => els.forEach(el => { el.style.transform = ''; el.style.opacity = ''; el.style.display = ''; el.classList.remove('is-dragging'); });
+  const reset = () => validEls.forEach(el => { if (el) { el.style.transform = ''; el.style.opacity = ''; el.style.display = ''; el.classList?.remove('is-dragging'); } });
 
   if (reduced) { // settle off-screen, then show the finished pile
     for (let i = 0; i < 900; i++) Engine.update(engine, STEP);
