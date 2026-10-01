@@ -204,7 +204,6 @@ function Personal({ onWork, onServices, onContact }) {
 
     <motion.div className="bento-avatar" {...avatarTilt}>
       <MemojiAvatar />
-      <motion.span {...useMagnetic()}>Hello <Icon name="arrowUpRight" /></motion.span>
     </motion.div>
 
     <button className="bento-work" onClick={onWork}>

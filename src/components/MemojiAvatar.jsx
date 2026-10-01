@@ -2,11 +2,34 @@
 // Motion uses SVG-native animation (SMIL), not CSS transforms: pixel-exact rotation points that behave the same in Safari on iPhone,
 // where CSS transform-origin on SVG parts is unreliable. Nothing here moves the eyes or brows up and down: a blink is an open/closed cross-fade.
 // Reduced motion never starts them: the loops are not rendered and the wave is never triggered, so the avatar stays still.
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useReducedMotion } from 'motion/react';
 
 const SKIN = '#c58d65', SKIN_SHADE = '#a46c4a', SKIN_LIGHT = '#dcab84', HAIR = '#15110f', LASH = '#1b0f0a';
 const WAVE_MS = 3400, WAVE_EVERY = 11000;
+
+const SARCASTIC_QUOTES = [
+  "Ouch! Don't touch, I'm compile-time sensitive.",
+  "Yes, I wrote all this code. No, I will not fix your Wi-Fi.",
+  "404: Patience not found. Please try again later.",
+  "It works on my machine. ¯\\_(ツ)_/¯",
+  "Bro, do you even git commit --force?",
+  "Poke me again and I'm pushing straight to main on a Friday.",
+  "I'm not ignoring you, I'm just buffering in asynchronous silence.",
+  "My back hurts from carrying this clean architecture.",
+  "Can you not? I'm in the middle of a recursive existential crisis.",
+  "Every time you poke, an npm package gets deprecated.",
+  "Warning: High caffeine levels detected. Approach with caution.",
+  "Looking for bugs? Those are undocumented bespoke features.",
+  "Tabs vs spaces? I use whatever makes the linter cry least.",
+  "Did you try turning it off and letting me sleep?",
+  "Careful. My CSS is held together by pure willpower and !important.",
+  "Still poking? Don't you have a sprint retro to attend?",
+  "PR approved: 0 comments, 0 reviews, maximum vibes.",
+  "Hey! I charge $150/hr for poke consultations."
+];
+
+const EFFECTS = ['shake', 'jump', 'glitch', 'spin', 'glow', 'squish'];
 
 // One eye, drawn around x = 98. Open and closed states cross-fade for the blink.
 function Eye({ dx, blink }) {
@@ -30,18 +53,85 @@ export default function MemojiAvatar() {
   const reduced = useReducedMotion();
   const wave = useRef([]);
   const timers = useRef([]);
-  const play = (delay = 0) => { timers.current.push(setTimeout(() => wave.current.forEach(a => a?.beginElement?.()), delay)); };
+  const bubbleTimer = useRef(null);
+
+  const [quoteIndex, setQuoteIndex] = useState(-1);
+  const [effect, setEffect] = useState('');
+  const [pokeCount, setPokeCount] = useState(0);
+  const [showBubble, setShowBubble] = useState(false);
+  const [animKey, setAnimKey] = useState(0);
+
+  const play = useCallback((delay = 0) => {
+    timers.current.push(setTimeout(() => wave.current.forEach(a => a?.beginElement?.()), delay));
+  }, []);
+
   const reg = i => el => { wave.current[i] = el; };
 
-  useEffect(() => { // greet once shortly after opening, then every few seconds while the page is visible
+  useEffect(() => {
     if (reduced) return;
     play(1200);
     const every = setInterval(() => { if (!document.hidden) play(); }, WAVE_EVERY);
-    return () => { clearInterval(every); timers.current.forEach(clearTimeout); timers.current = []; };
-  }, [reduced]);
+    return () => {
+      clearInterval(every);
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+      if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
+    };
+  }, [reduced, play]);
+
+  const handlePoke = () => {
+    if (!reduced) play();
+
+    setQuoteIndex(prev => {
+      let next;
+      do {
+        next = Math.floor(Math.random() * SARCASTIC_QUOTES.length);
+      } while (next === prev && SARCASTIC_QUOTES.length > 1);
+      return next;
+    });
+
+    setEffect(prev => {
+      let next;
+      do {
+        next = EFFECTS[Math.floor(Math.random() * EFFECTS.length)];
+      } while (next === prev && EFFECTS.length > 1);
+      return next;
+    });
+
+    setAnimKey(k => k + 1);
+    setPokeCount(c => c + 1);
+    setShowBubble(true);
+
+    if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
+    bubbleTimer.current = setTimeout(() => {
+      setShowBubble(false);
+    }, 4500);
+  };
 
   const dur = `${WAVE_MS}ms`;
-  return <button type="button" className="mj-button" aria-label="Tanxdai's avatar. Activate to wave hello." onClick={() => !reduced && play()}>
+
+  const hintText = pokeCount === 0
+    ? 'Poke me ⚡'
+    : pokeCount >= 10
+    ? `Poked ${pokeCount}× 🛑 (Mercy!)`
+    : pokeCount >= 5
+    ? `Poked ${pokeCount}× 🔥 (Why?)`
+    : `Poked ${pokeCount}× ⚡`;
+
+  return (
+    <div className="avatar-wrapper">
+      {showBubble && quoteIndex >= 0 && (
+        <div key={`bubble-${animKey}`} className="avatar-speech-bubble" role="status" aria-live="polite">
+          {SARCASTIC_QUOTES[quoteIndex]}
+        </div>
+      )}
+      <button
+        key={`btn-${animKey}`}
+        type="button"
+        className={`mj-button ${!reduced && effect ? `fx-${effect}` : ''}`}
+        aria-label="Tanxdai's avatar. Poke to hear witty commentary."
+        onClick={handlePoke}
+      >
     <svg className="mj" viewBox="0 0 240 240" aria-hidden="true">
       <defs>
         <radialGradient id="mj-bg" cx=".5" cy=".28" r=".9"><stop offset="0" stopColor="#35483f" /><stop offset="1" stopColor="#161d18" /></radialGradient>
@@ -117,5 +207,8 @@ export default function MemojiAvatar() {
         </g>
       </g>
     </svg>
-  </button>;
+  </button>
+  <span className="avatar-hint">{hintText}</span>
+</div>
+  );
 }
