@@ -1,0 +1,62 @@
+/* UX review (2026-10-01): fixes found while walking every view on phone and desktop. */
+
+/* Projects without a screenshot yet: an honest, on-brand frame that still invites a visit. */
+.preview-pending { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 20px; text-align: center;
+  background: radial-gradient(120% 90% at 50% 0%, #1f1f1f, #0f0f0f 70%); }
+.preview-pending b { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 22px; font-size: 30px; font-weight: 500; letter-spacing: -.03em; color: #f0f0f0;
+  background: linear-gradient(180deg, #2a2a2a, #181818); border: 1px solid #3a3a3a; box-shadow: inset 0 1px 0 #ffffff12, 0 10px 30px #000a; }
+.preview-pending span { font-size: var(--text-body); color: var(--color-ink); }
+.preview-pending small { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-label); color: var(--ink-quiet); }
+.preview-pending small svg { width: 12px; height: 12px; }
+.live-preview:hover .preview-pending small { color: var(--color-mint); }
+.thumb-mono { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; font-weight: 500; color: #e6e6e6; background: linear-gradient(180deg, #2c2c2c, #1a1a1a); }
+
+/* Deck controls: the slider loops endlessly and shows no numbers. Desktop keeps the thumbnail strip; phones (where nine
+   thumbnails cannot fit at a usable size) show a quiet dot indicator between full-size arrows, and swipe still works. */
+.deck-dots { display: none; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.deck-controls .project-filmstrip button > span { display: none; }
+@media (max-width: 600px) {
+  .deck-controls .project-filmstrip { display: none; }
+  .deck-dots { display: flex; align-items: center; gap: 6px; }
+  .deck-dots i { width: 6px; height: 6px; border-radius: 3px; background: #4a4a4a; transition: width var(--dur-base) var(--ease-enter), background-color var(--dur-base) var(--ease-enter); }
+  .deck-dots i.on { width: 18px; background: var(--color-mint); }
+  .deck-controls { gap: 18px; justify-content: center; }
+  .deck-controls > button { width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) { .deck-dots i { transition: none; } }
+
+/* Wordmark: same look, a comfortable 44px hit area. */
+.wordmark { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* Personal card headers that link somewhere: full 44px target. */
+.bento-card-link { min-height: 44px; margin: -6px 0; }
+
+/* Contact actions are real links once configured; they look identical whether they are <a> or <button>. */
+.contact-option { display: flex; align-items: center; gap: 12px; width: 100%; color: inherit; font: inherit; text-decoration: none; text-align: left; cursor: pointer; }
+.contact-option > svg:last-child { margin-left: auto; width: 16px; height: 16px; color: #bbb; flex-shrink: 0; }
+.contact-dialog-actions { display: grid; gap: 8px; margin: 16px 0 14px; }
+.contact-dialog-actions > .contact-option { background: #191919; border: 1px solid #2c2c2c; border-radius: 14px; padding: 12px; min-height: 64px; }
+.contact-dialog-actions > .contact-option:hover { background: #252525; border-color: #555; }
+.contact-note { margin: 4px 0 0; font-size: var(--text-label); color: var(--ink-quiet); }
+
+/* Service dialog on phones and tablets: the description and what is included come back whenever the height allows,
+   because they are what a visitor decides on (previously only the animation and the call button showed). */
+@media (max-width: 900px) and (min-height: 700px) {
+  .service-info .service-description { display: block; font-size: var(--text-body); line-height: 1.5; margin: 0 0 6px; }
+}
+@media (max-width: 900px) and (min-height: 780px) {
+  .service-info .goal-label { display: block; margin: 6px 0 2px; }
+  .service-info ul { display: block; margin: 0 0 6px; }
+  .service-info li { padding: 5px 0; font-size: var(--text-body); }
+}
+
+/* Call dialog on short screens: drop the hints and tighten the options so all three fit without scrolling. */
+@media (max-height: 640px) {
+  #contact-dialog h2 { font-size: 24px; margin: 4px 0; }
+  .contact-dialog-actions { margin: 10px 0 8px; gap: 6px; }
+  .contact-dialog-actions > .contact-option { min-height: 48px; padding: 6px 10px; }
+  .contact-dialog-actions .contact-option small { display: none; }
+  .contact-dialog-actions .contact-option-icon { width: 34px; height: 34px; }
+}
+@media (max-height: 500px) { #contact-dialog #back-work { display: none; } #contact-dialog .contact-note { display: none; } }
