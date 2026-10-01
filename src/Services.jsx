@@ -84,7 +84,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   }, []);
   
   const filtered = services.filter(service => filter === 'All' || service[0] === filter);
-  const perPage = shortPhone ? 2 : compact ? 4 : 6;
+  const perPage = compact ? 2 : 4;
   const pages = Math.ceil(filtered.length / perPage);
   
   const goToPage = (newPage) => {
@@ -132,7 +132,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   useLayoutEffect(() => { if (selected && !dialog.current.open) dialog.current.showModal(); }, [selected]); // same frame as the click
   const landed = () => { dialog.current?.close(); opener.current?.focus(); };
   
-  return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`} ref={viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} tabIndex={0} style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
+  return <div className={`services-app ${compact ? 'services-readable' : ''}`} ref={viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} tabIndex={0} style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
     <div className="services-heading">
       <div>
         <span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1>
@@ -151,7 +151,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
     <div style={{ position: 'relative', flex: 1, minHeight: 0, paddingBottom: '20px' }}>
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div key={`${filter}-${page}`} custom={direction} className="service-grid"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gridTemplateRows: 'repeat(2, minmax(200px, 350px))', alignContent: 'center', justifyItems: 'stretch', alignItems: 'stretch', height: '100%', position: 'absolute', inset: '0 0 20px 0' }}
+          style={{ display: 'grid', gridTemplateColumns: compact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gridTemplateRows: 'repeat(2, minmax(200px, 350px))', alignContent: 'center', justifyItems: 'stretch', alignItems: 'stretch', height: '100%', position: 'absolute', inset: '0 0 20px 0' }}
           variants={{
             from: dir => ({ opacity: 0, y: dir * 50 }),
             shown: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] } },
