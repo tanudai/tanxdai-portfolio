@@ -113,15 +113,15 @@ export default function MemojiAvatar() {
   const hintText = pokeCount === 0
     ? 'Poke me ⚡'
     : pokeCount >= 10
-    ? `Poked ${pokeCount}× 🛑 (Mercy!)`
+    ? `Poked ${pokeCount}x 🛑 (Mercy!)`
     : pokeCount >= 5
-    ? `Poked ${pokeCount}× 🔥 (Why?)`
-    : `Poked ${pokeCount}× ⚡`;
+    ? `Poked ${pokeCount}x 🔥 (Why?)`
+    : `Poked ${pokeCount}x ⚡`;
 
   return (
     <div className="avatar-wrapper">
       {showBubble && quoteIndex >= 0 && (
-        <div key={`bubble-${animKey}`} className="avatar-speech-bubble" role="status" aria-live="polite">
+        <div key={`bubble-${animKey}`} className="avatar-speech-bubble" role="status" aria-live="polite" data-decorative>
           {SARCASTIC_QUOTES[quoteIndex]}
         </div>
       )}
@@ -132,7 +132,7 @@ export default function MemojiAvatar() {
         aria-label="Tanxdai's avatar. Poke to hear witty commentary."
         onClick={handlePoke}
       >
-    <svg className="mj" viewBox="0 0 240 240" aria-hidden="true">
+    <svg className="mj" data-decorative viewBox="0 0 240 240" aria-hidden="true">
       <defs>
         <radialGradient id="mj-bg" cx=".5" cy=".28" r=".9"><stop offset="0" stopColor="#35483f" /><stop offset="1" stopColor="#161d18" /></radialGradient>
         <linearGradient id="mj-face" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={SKIN_LIGHT} /><stop offset=".5" stopColor={SKIN} /><stop offset="1" stopColor="#ae7552" /></linearGradient>

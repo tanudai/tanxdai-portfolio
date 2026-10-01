@@ -154,8 +154,8 @@ export default function Services({ onCall, initialFilter = 'All' }) {
           style={{ display: 'grid', gridTemplateColumns: compact ? '1fr' : 'repeat(2, minmax(0, 1fr))', gridTemplateRows: 'repeat(2, minmax(200px, 350px))', alignContent: 'center', justifyItems: 'stretch', alignItems: 'stretch', height: '100%', position: 'absolute', inset: '0 0 20px 0' }}
           variants={{
             from: dir => ({ opacity: 0, y: dir * 50 }),
-            shown: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] } },
-            gone: dir => ({ opacity: 0, y: dir * -50, transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } })
+            shown: { opacity: 1, y: 0, transition: { duration: 0.4, ease: ease.enter } },
+            gone: dir => ({ opacity: 0, y: dir * -50, transition: { duration: 0.2, ease: ease.exit } })
           }}
           initial={reducedMotion ? false : 'from'} animate="shown" exit={reducedMotion ? undefined : 'gone'}>
           {filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} style={{ width: '100%', height: '100%' }} />)}

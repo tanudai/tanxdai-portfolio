@@ -178,6 +178,35 @@ function Personal({ onWork, onServices, onContact }) {
   const avatarTilt = useTilt(16);
   const toolsRef = useRef(null);
   const gymRef = useRef(null);
+  const [mobilePage, setMobilePage] = useState(0);
+
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+  const handleTouchStart = e => {
+    if (e.target.closest('.phys-field') || e.target.closest('.crt-body') || e.target.closest('.spotify-card') || e.target.closest('.personal-mobile-nav')) return;
+    if (e.touches.length === 1) {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    }
+  };
+  const handleTouchEnd = e => {
+    if (touchStartX.current === null) return;
+    const diffX = touchStartX.current - e.changedTouches[0].clientX;
+    const diffY = touchStartY.current !== null ? Math.abs(touchStartY.current - e.changedTouches[0].clientY) : 0;
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > diffY * 1.2) {
+      if (diffX > 40 && mobilePage < 2) {
+        e.stopPropagation();
+        setMobilePage(p => p + 1);
+        try { navigator.vibrate?.(8); } catch (_) {}
+      } else if (diffX < -40 && mobilePage > 0) {
+        e.stopPropagation();
+        setMobilePage(p => p - 1);
+        try { navigator.vibrate?.(8); } catch (_) {}
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
 
   const playgroundItems = [
     { key: 'react', node: <><b>Re</b><small>React</small></> },
@@ -201,84 +230,117 @@ function Personal({ onWork, onServices, onContact }) {
     { key: 'chalk', shape: 'rect', node: <ChalkBlock /> },
   ];
 
-  return <div className="personal-bento">
-    <article className="bento-intro">
-      <span className="bento-label">DESIGN & DEVELOPMENT</span>
-      <h1>Hey, I’m Tanxdai<span>.</span></h1>
-      <p>Bespoke web developer & AI engineer building clean, high-performance interfaces.</p>
-    </article>
-
-    <motion.div className="bento-avatar" {...avatarTilt}>
-      <MemojiAvatar />
-    </motion.div>
-
-    <button className="bento-work" onClick={onWork}>
-      <span className="bento-card-top">Selected work <span><Icon name="arrowUpRight" /></span></span>
-      <div className="bento-previews">
-        {[projects[0], projects[1], projects[4]].map((project, index) => (
-          <img key={project.name} src={project.image} alt={project.name} style={{ '--order': index }} />
+  return (
+    <div
+      className="personal-container"
+      data-mobile-page={mobilePage}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div className="personal-mobile-nav" role="tablist" aria-label="Personal sections">
+        {[
+          { id: 0, label: 'Profile', icon: '👤' },
+          { id: 1, label: 'Physics', icon: '⚡' },
+          { id: 2, label: 'Terminal', icon: '💻' }
+        ].map(p => (
+          <button
+            key={p.id}
+            type="button"
+            className={`p-nav-btn ${mobilePage === p.id ? 'active' : ''}`}
+            onClick={() => {
+              setMobilePage(p.id);
+              try { navigator.vibrate?.(8); } catch (_) {}
+            }}
+            role="tab"
+            aria-selected={mobilePage === p.id}
+          >
+            <span className="p-nav-icon">{p.icon}</span>
+            <span>{p.label}</span>
+            {mobilePage === p.id && <motion.span layoutId="personal-mobile-pill" className="p-nav-active-pill" transition={springs.ui} />}
+          </button>
         ))}
       </div>
-      <span className="bento-footnote">Explore featured client builds</span>
-    </button>
 
-    <article className="bento-terminal">
-      <TerminalWidget />
-    </article>
+      <div className="personal-bento">
+        <article className="bento-intro">
+          <span className="bento-label">DESIGN & DEVELOPMENT</span>
+          <h1>Hey, I’m Tanxdai<span>.</span></h1>
+          <p>Bespoke web developer & AI engineer building clean, high-performance interfaces.</p>
+        </article>
 
-    <article className="bento-tools">
-      <div className="bento-card-top">
-        <span className="bento-label">TECH TOOLKIT</span>
-        <button
-          type="button"
-          className="phys-shake-btn"
-          onClick={() => toolsRef.current?.shake?.()}
-          aria-label="Shake Tech Toolkit"
-          title="Shake & toss blocks"
-        >
-          <span>↺ Shake</span>
+        <motion.div className="bento-avatar" {...avatarTilt}>
+          <MemojiAvatar />
+        </motion.div>
+
+        <button className="bento-work" onClick={onWork}>
+          <span className="bento-card-top">Selected work <span><Icon name="arrowUpRight" /></span></span>
+          <div className="bento-previews">
+            {[projects[0], projects[1], projects[4]].map((project, index) => (
+              <img key={project.name} src={project.image} alt={project.name} style={{ '--order': index }} />
+            ))}
+          </div>
+          <span className="bento-footnote">Explore featured client builds</span>
         </button>
-      </div>
-      <PhysicsPile ref={toolsRef} label="Interactive toolkit" variant="tile" items={playgroundItems} />
-    </article>
 
-    <article className="bento-gym">
-      <div className="bento-card-top">
-        <span className="bento-label">IRON & DISCIPLINE</span>
-        <button
-          type="button"
-          className="phys-shake-btn gym-shake-btn"
-          onClick={() => gymRef.current?.shake?.()}
-          aria-label="Shake Iron Gym"
-          title="Shake iron weights"
-        >
-          <span>↺ Shake</span>
-        </button>
-      </div>
-      <PhysicsPile ref={gymRef} label="Gym playground" variant="gym" items={gymItems} />
-    </article>
+        <article className="bento-terminal">
+          <TerminalWidget />
+        </article>
 
-    <article className="bento-stats">
-      <div className="bento-card-top">
-        <span className="bento-label">AT A GLANCE</span>
-        <div className="availability-badge">
-          <span className="pulse-dot" />
-          <span>Available</span>
-        </div>
+        <article className="bento-tools">
+          <div className="bento-card-top">
+            <span className="bento-label">TECH TOOLKIT</span>
+            <button
+              type="button"
+              className="phys-shake-btn"
+              onClick={() => toolsRef.current?.shake?.()}
+              aria-label="Shake Tech Toolkit"
+              title="Shake & toss blocks"
+            >
+              <span>↺ Shake</span>
+            </button>
+          </div>
+          <PhysicsPile ref={toolsRef} label="Interactive toolkit" variant="tile" items={playgroundItems} />
+        </article>
+
+        <article className="bento-gym">
+          <div className="bento-card-top">
+            <span className="bento-label">IRON & DISCIPLINE</span>
+            <button
+              type="button"
+              className="phys-shake-btn gym-shake-btn"
+              onClick={() => gymRef.current?.shake?.()}
+              aria-label="Shake Iron Gym"
+              title="Shake iron weights"
+            >
+              <span>↺ Shake</span>
+            </button>
+          </div>
+          <PhysicsPile ref={gymRef} label="Gym playground" variant="gym" items={gymItems} />
+        </article>
+
+        <article className="bento-stats">
+          <div className="bento-card-top">
+            <span className="bento-label">AT A GLANCE</span>
+            <div className="availability-badge">
+              <span className="pulse-dot" />
+              <span>Available</span>
+            </div>
+          </div>
+          <div className="stats-grid">
+            <div className="stat-item">
+              <b>5+</b>
+              <small>Years Building</small>
+            </div>
+            <div className="stat-item">
+              <b>100%</b>
+              <small>Remote Worldwide</small>
+            </div>
+          </div>
+          <SpotifyWidget />
+        </article>
       </div>
-      <div className="stats-grid">
-        <div className="stat-item">
-          <b>5+</b>
-          <small>Years Building</small>
-        </div>
-        <div className="stat-item">
-          <b>100%</b>
-          <small>Remote Worldwide</small>
-        </div>
-      </div>
-      <SpotifyWidget />
-    </article>
-  </div>;
+    </div>
+  );
 }
 
 export default function App() {

@@ -77,7 +77,7 @@
   text-align: center;
   z-index: 50;
   pointer-events: none;
-  animation: bubble-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation: bubble-in 0.28s var(--ease-enter) forwards;
 }
 
 .avatar-speech-bubble::after {
@@ -110,7 +110,7 @@
 }
 
 .mj-button.fx-jump .mj {
-  animation: avatar-jump 0.52s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: avatar-jump 0.52s var(--ease-enter);
 }
 
 .mj-button.fx-glitch .mj {
@@ -118,7 +118,7 @@
 }
 
 .mj-button.fx-spin .mj {
-  animation: avatar-spin 0.62s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: avatar-spin 0.62s var(--ease-hero);
 }
 
 .mj-button.fx-glow .mj {
@@ -126,7 +126,7 @@
 }
 
 .mj-button.fx-squish .mj {
-  animation: avatar-squish 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: avatar-squish 0.45s var(--ease-enter);
 }
 
 @keyframes avatar-shake {
@@ -190,10 +190,18 @@
 
 @media (max-width: 600px) {
   .avatar-speech-bubble {
-    max-width: 170px;
+    left: auto;
+    right: -2px;
+    transform: none;
+    max-width: 175px;
     font-size: 10px;
     padding: 6px 10px;
-    top: -4px;
+    top: -6px;
+  }
+  .avatar-speech-bubble::after {
+    left: auto;
+    right: 36px;
+    transform: none;
   }
 }
 
