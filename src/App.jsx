@@ -66,15 +66,16 @@ const wrap = position => ((position % projects.length) + projects.length) % proj
 const slotFor = (i, position) => { const n = projects.length, half = Math.floor(n / 2); return position + ((i - wrap(position) + n + half) % n) - half; };
 
 function ProjectCard({ project, i, index, position, y, step, height }) {
-  const yActive = -(i * step);
-  const yNextActive = -((i + 1) * step);
+  const slot = slotFor(i, position);
+  const yActive = -(slot * step);
+  const yNextActive = -((slot + 1) * step);
   
   const scale = useTransform(y, [yActive + step, yActive, yNextActive], [1, 1, 0.92]);
   const filter = useTransform(y, [yActive + step, yActive, yNextActive], ['brightness(1)', 'brightness(1)', 'brightness(0.5)']);
   const imgY = useTransform(y, [yActive + step, yActive, yNextActive], [80, 0, -80]);
 
   return <motion.article className={`react-card theme-${i % 4}`}
-    style={{ top: slotFor(i, position) * step, height, scale, filter }} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${projects.length}: ${project.name}`}
+    style={{ top: slot * step, height, scale, filter }} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${projects.length}: ${project.name}`}
     aria-hidden={i !== index} inert={i !== index}>
     <ProjectPoster project={project} index={i} active={i === index} imgY={imgY} />
   </motion.article>;
