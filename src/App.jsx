@@ -12,6 +12,7 @@ import { BorderTrail, TextReveal, trackSpotlight, useMagnetic, useTilt } from '.
 import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { PlateIcon, DumbbellIcon, KettlebellIcon, ShakerIcon, WaterIcon, StrapsIcon } from './components/GymIcons.jsx';
 import TerminalWidget from './components/TerminalWidget.jsx';
+import SpotifyWidget from './components/SpotifyWidget.jsx';
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 
@@ -175,6 +176,9 @@ function ProjectDeck({ enabled }) {
 
 function Personal({ onWork, onServices, onContact }) {
   const avatarTilt = useTilt(16);
+  const toolsRef = useRef(null);
+  const gymRef = useRef(null);
+
   const playgroundItems = [
     { key: 'react', node: <><b>Re</b><small>React</small></> },
     { key: 'python', node: <><b>Py</b><small>Python</small></> },
@@ -223,21 +227,43 @@ function Personal({ onWork, onServices, onContact }) {
     <article className="bento-tools">
       <div className="bento-card-top">
         <span className="bento-label">TECH TOOLKIT</span>
-        <small className="drag-hint">Drag & toss</small>
+        <button
+          type="button"
+          className="phys-shake-btn"
+          onClick={() => toolsRef.current?.shake?.()}
+          aria-label="Shake Tech Toolkit"
+          title="Shake & toss blocks"
+        >
+          <span>↺ Shake</span>
+        </button>
       </div>
-      <PhysicsPile label="Interactive toolkit" variant="tile" items={playgroundItems} />
+      <PhysicsPile ref={toolsRef} label="Interactive toolkit" variant="tile" items={playgroundItems} />
     </article>
 
     <article className="bento-gym">
       <div className="bento-card-top">
         <span className="bento-label">IRON & DISCIPLINE</span>
-        <small className="drag-hint">Iron playground</small>
+        <button
+          type="button"
+          className="phys-shake-btn gym-shake-btn"
+          onClick={() => gymRef.current?.shake?.()}
+          aria-label="Shake Iron Gym"
+          title="Shake iron weights"
+        >
+          <span>↺ Shake</span>
+        </button>
       </div>
-      <PhysicsPile label="Gym playground" variant="gym" items={gymItems} />
+      <PhysicsPile ref={gymRef} label="Gym playground" variant="gym" items={gymItems} />
     </article>
 
     <article className="bento-stats">
-      <span className="bento-label">AT A GLANCE</span>
+      <div className="bento-card-top">
+        <span className="bento-label">AT A GLANCE</span>
+        <div className="availability-badge">
+          <span className="pulse-dot" />
+          <span>Available</span>
+        </div>
+      </div>
       <div className="stats-grid">
         <div className="stat-item">
           <b>5+</b>
@@ -248,10 +274,7 @@ function Personal({ onWork, onServices, onContact }) {
           <small>Remote Worldwide</small>
         </div>
       </div>
-      <div className="availability-badge">
-        <span className="pulse-dot" />
-        <span>Available for Q2 projects</span>
-      </div>
+      <SpotifyWidget />
     </article>
   </div>;
 }

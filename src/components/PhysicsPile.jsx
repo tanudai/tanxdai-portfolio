@@ -2,28 +2,40 @@
 // Tap or press a block and it hops; drag it and it follows the pointer on a spring, then keeps its momentum when released.
 // Blocks are real DOM buttons moved by transform, so text stays crisp and keyboard users can hop them with Enter or Space.
 // Reduced motion: the pile is settled ahead of time and stays still. The loop sleeps once everything comes to rest.
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { grip as gripFeel } from '../motion.js';
+import { playPhysicsThud } from '../utils/audioPhysics.js';
 
 const STEP = 1000 / 60;
 const TAP_MOVE = 6, TAP_TIME = 350; // pointer travel (px) and duration (ms) that still count as a tap
 const FILL = 0.66; // share of the field the blocks may cover, so the pile never reaches the top
 
 // Small seeded generator: the same pile every time the tab opens, which keeps screenshots and tests stable.
-const seeded = seed => () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const seeded = seed => () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
 
-export default function PhysicsPile({ items, variant = 'chip', label }) {
+const PhysicsPile = forwardRef(function PhysicsPile({ items, variant = 'tile', label }, ref) {
   const field = useRef(null);
   const nodes = useRef([]);
+  const shakeFn = useRef(() => {});
   const reduced = useReducedMotion();
+
+  useImperativeHandle(ref, () => ({
+    shake: () => shakeFn.current?.(),
+  }));
 
   useEffect(() => {
     const root = field.current;
+    if (!root) return;
     let dispose = () => {};
     let alive = true;
     let key = '';
-    // Start (or restart) the simulation whenever the field gets a real size, e.g. when its tab is shown. Hidden tabs have no size and no engine.
+
     const observer = new ResizeObserver(() => {
       const { width, height } = root.getBoundingClientRect();
       const next = `${Math.round(width / 12)}x${Math.round(height / 12)}`;
@@ -32,40 +44,89 @@ export default function PhysicsPile({ items, variant = 'chip', label }) {
       dispose();
       dispose = () => {};
       if (width < 40 || height < 40) return;
-      import('matter-js').then(({ default: Matter }) => { if (alive && key === next) dispose = start(Matter, root, nodes.current, reduced, label, variant); }).catch(() => {});
+      import('matter-js')
+        .then(({ default: Matter }) => {
+          if (alive && key === next) {
+            const res = start(Matter, root, nodes.current, reduced, label, variant);
+            dispose = res.dispose;
+            shakeFn.current = res.shake;
+          }
+        })
+        .catch(() => {});
     });
+
     observer.observe(root);
-    return () => { alive = false; observer.disconnect(); dispose(); };
+    return () => {
+      alive = false;
+      observer.disconnect();
+      dispose();
+      shakeFn.current = () => {};
+    };
   }, [reduced, label, variant]);
 
-  return <div ref={field} className="phys-field" role="group" aria-label={`${label}. ${reduced ? '' : 'Drag or tap the blocks to play.'}`}>
-    {items.map((item, i) => <button key={item.key} ref={el => { nodes.current[i] = el; }} type="button" className={`phys-block phys-${variant}`} tabIndex={reduced ? -1 : 0} data-i={i}>{item.node}</button>)}
-  </div>;
-}
+  const handleDoubleTap = (e) => {
+    if (!e.target.closest('.phys-block')) {
+      shakeFn.current?.();
+    }
+  };
+
+  return (
+    <div
+      ref={field}
+      className="phys-field"
+      role="group"
+      aria-label={`${label}. ${reduced ? '' : 'Drag, tap, or double-tap background to shake.'}`}
+      onDoubleClick={handleDoubleTap}
+    >
+      {items.map((item, i) => (
+        <button
+          key={item.key}
+          ref={el => { nodes.current[i] = el; }}
+          type="button"
+          className={`phys-block phys-${variant}`}
+          tabIndex={reduced ? -1 : 0}
+          data-i={i}
+        >
+          {item.node}
+        </button>
+      ))}
+    </div>
+  );
+});
+
+export default PhysicsPile;
 
 function start(Matter, root, els, reduced, label, variant = 'tile') {
-  const { Engine, Bodies, Body, Composite, Constraint, Sleeping } = Matter;
+  const { Engine, Bodies, Body, Composite, Constraint, Sleeping, Events } = Matter;
   const isGym = variant === 'gym';
   const { width: W, height: H } = root.getBoundingClientRect();
   const rand = seeded([...label].reduce((a, c) => a * 31 + c.charCodeAt(0), 7));
   const engine = Engine.create({ enableSleeping: true, positionIterations: 8, velocityIterations: 6 });
   engine.gravity.y = isGym ? 1.38 : 1.05;
 
-  // Keep as many blocks as fit comfortably (list order is priority order): within the area budget, and within the rows the height allows.
   let area = 0, rowWidth = 0, tallest = 0, shown = 0;
   const validEls = els.filter(Boolean);
-  const sizes = validEls.map(el => { el.style.display = ''; return [el.offsetWidth, el.offsetHeight]; });
+  const sizes = validEls.map(el => {
+    el.style.display = '';
+    return [el.offsetWidth, el.offsetHeight];
+  });
+
   sizes.forEach(([w, h], i) => {
-    area += (w + 4) * (h + 4); rowWidth += w + 6; tallest = Math.max(tallest, h);
+    area += (w + 4) * (h + 4);
+    rowWidth += w + 6;
+    tallest = Math.max(tallest, h);
     const rows = Math.ceil(rowWidth / (W * 0.9));
     if ((area <= W * H * FILL && rows * tallest <= H) || i < 1) shown = i + 1;
   });
   validEls.forEach((el, i) => { el.style.display = i < shown ? '' : 'none'; });
 
   const wall = (x, y, w, h) => Bodies.rectangle(x, y, w, h, { isStatic: true, friction: 0.6 });
-  Composite.add(engine.world, [wall(W / 2, H + 30, W * 4, 60), wall(-30, H / 2 - H * 2, 60, H * 6), wall(W + 30, H / 2 - H * 2, 60, H * 6)]);
+  Composite.add(engine.world, [
+    wall(W / 2, H + 30, W * 4, 60),
+    wall(-30, H / 2 - H * 2, 60, H * 6),
+    wall(W + 30, H / 2 - H * 2, 60, H * 6)
+  ]);
 
-  // They start stacked above the field and fall in one after another, so they land on each other.
   const bodies = [];
   const lanes = Math.max(1, Math.floor(W / (sizes.slice(0, shown).reduce((a, [w]) => a + w, 0) / Math.max(1, shown) + 8)));
   let y = -10;
@@ -73,7 +134,7 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     const [w, h] = sizes[i] || [40, 20];
     y -= h * 1.15;
     const round = validEls[i]?.classList?.contains('phys-chip') ? h / 2 : 12;
-    const x = Math.min(W - w / 2, Math.max(w / 2, W * (((i % lanes) + 0.5) / lanes) + (rand() - 0.5) * 24)); // spread across lanes, then pile on top
+    const x = Math.min(W - w / 2, Math.max(w / 2, W * (((i % lanes) + 0.5) / lanes) + (rand() - 0.5) * 24));
     const body = Bodies.rectangle(x, y, w, h, {
       chamfer: { radius: Math.min(round, h / 2) },
       angle: (rand() - 0.5) * 1.1,
@@ -94,34 +155,84 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     el.style.transform = `translate3d(${body.position.x - w / 2}px,${body.position.y - h / 2}px,0) rotate(${body.angle}rad)`;
     el.style.opacity = 1;
   });
-  const reset = () => validEls.forEach(el => { if (el) { el.style.transform = ''; el.style.opacity = ''; el.style.display = ''; el.classList?.remove('is-dragging'); } });
 
-  if (reduced) { // settle off-screen, then show the finished pile
+  const reset = () => validEls.forEach(el => {
+    if (el) {
+      el.style.transform = '';
+      el.style.opacity = '';
+      el.style.display = '';
+      el.classList?.remove('is-dragging');
+    }
+  });
+
+  if (reduced) {
     for (let i = 0; i < 900; i++) Engine.update(engine, STEP);
     paint();
-    return () => { reset(); Engine.clear(engine); };
+    return {
+      dispose: () => {
+        reset();
+        Engine.clear(engine);
+      },
+      shake: () => {}
+    };
   }
 
-  // Loop: fixed 60Hz steps, runs only while something moves and the page is visible.
   let active = true;
   let raf = 0, last = 0, acc = 0, drag = null;
   const awake = () => active && (drag || bodies.some(b => !b.isSleeping));
+
   const frame = now => {
     if (!active) return;
     raf = 0;
     try {
-      acc += Math.min(50, now - (last || now)); last = now;
-      while (acc >= STEP) { Engine.update(engine, STEP); acc -= STEP; }
+      acc += Math.min(50, now - (last || now));
+      last = now;
+      while (acc >= STEP) {
+        Engine.update(engine, STEP);
+        acc -= STEP;
+      }
       paint();
-      if (active && awake() && !document.hidden) raf = requestAnimationFrame(frame); else last = 0;
+      if (active && awake() && !document.hidden) raf = requestAnimationFrame(frame);
+      else last = 0;
     } catch (_) {
       active = false;
     }
   };
-  const run = () => { if (active && !raf && !document.hidden) raf = requestAnimationFrame(frame); };
-  const wake = body => { if (active) { Sleeping.set(body, false); run(); } };
+
+  const run = () => {
+    if (active && !raf && !document.hidden) raf = requestAnimationFrame(frame);
+  };
+
+  const wake = body => {
+    if (active) {
+      Sleeping.set(body, false);
+      run();
+    }
+  };
+
   paint();
   run();
+
+  // Collision detection for audio thuds & haptics
+  const onCollision = event => {
+    if (!active) return;
+    for (let i = 0; i < event.pairs.length; i++) {
+      const pair = event.pairs[i];
+      const speedA = Math.hypot(pair.bodyA.velocity?.x || 0, pair.bodyA.velocity?.y || 0);
+      const speedB = Math.hypot(pair.bodyB.velocity?.x || 0, pair.bodyB.velocity?.y || 0);
+      const speed = Math.max(speedA, speedB);
+      if (speed > (isGym ? 2.6 : 3.6)) {
+        playPhysicsThud(variant, speed / 11);
+        if (speed > 5.5) {
+          root.classList.add('thud-pulse');
+          setTimeout(() => { if (active) root.classList.remove('thud-pulse'); }, 140);
+          try { navigator.vibrate?.(10); } catch (_) {}
+        }
+        break;
+      }
+    }
+  };
+  Events.on(engine, 'collisionStart', onCollision);
 
   const hop = body => {
     if (!active) return;
@@ -130,9 +241,33 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     const hopX = isGym ? (rand() - 0.5) * 4 : (rand() - 0.5) * 6;
     Body.setVelocity(body, { x: hopX, y: hopY });
     Body.setAngularVelocity(body, (rand() - 0.5) * (isGym ? 0.2 : 0.35));
+    playPhysicsThud(variant, 0.4);
   };
 
-  const local = e => { const r = root.getBoundingClientRect(); return { x: Math.min(W, Math.max(0, e.clientX - r.left)), y: Math.min(H, Math.max(0, e.clientY - r.top)) }; };
+  const shake = () => {
+    if (!active) return;
+    bodies.forEach(b => {
+      Sleeping.set(b, false);
+      const hopY = isGym ? -(8.5 + rand() * 4) : -(11 + rand() * 5);
+      const hopX = (rand() - 0.5) * (isGym ? 7 : 10);
+      Body.setVelocity(b, { x: hopX, y: hopY });
+      Body.setAngularVelocity(b, (rand() - 0.5) * (isGym ? 0.35 : 0.5));
+    });
+    playPhysicsThud(variant, 0.85);
+    root.classList.add('thud-pulse');
+    setTimeout(() => { if (active) root.classList.remove('thud-pulse'); }, 180);
+    try { navigator.vibrate?.(15); } catch (_) {}
+    run();
+  };
+
+  const local = e => {
+    const r = root.getBoundingClientRect();
+    return {
+      x: Math.min(W, Math.max(0, e.clientX - r.left)),
+      y: Math.min(H, Math.max(0, e.clientY - r.top))
+    };
+  };
+
   const down = e => {
     if (!active) return;
     const el = e.target.closest('.phys-block');
@@ -147,12 +282,14 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     try { el.setPointerCapture?.(e.pointerId); } catch (_) {}
     wake(body);
   };
+
   const move = e => {
     if (!active || !drag || e.pointerId !== drag.id) return;
     drag.moved = Math.max(drag.moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y));
     drag.grip.pointA = local(e);
     wake(drag.body);
   };
+
   const up = e => {
     if (!drag || e.pointerId !== drag.id) return;
     const { el, body, grip, moved, t } = drag;
@@ -163,6 +300,7 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     if (active && e.type === 'pointerup' && moved < TAP_MOVE && performance.now() - t < TAP_TIME) hop(body);
     run();
   };
+
   const key = e => {
     if (!active || (e.key !== 'Enter' && e.key !== ' ')) return;
     const body = bodies[els.indexOf(e.target.closest('.phys-block'))];
@@ -170,6 +308,7 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     e.preventDefault();
     hop(body);
   };
+
   const visibility = () => { if (active && !document.hidden) run(); };
 
   root.addEventListener('pointerdown', down);
@@ -178,23 +317,28 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
   root.addEventListener('pointercancel', up);
   root.addEventListener('keydown', key);
   document.addEventListener('visibilitychange', visibility);
-  return () => {
-    active = false;
-    if (raf) cancelAnimationFrame(raf);
-    raf = 0;
-    if (drag) {
-      try { drag.el?.releasePointerCapture?.(drag.id); } catch (_) {}
-      drag.el?.classList?.remove('is-dragging');
-      drag = null;
-    }
-    root.removeEventListener('pointerdown', down);
-    root.removeEventListener('pointermove', move);
-    root.removeEventListener('pointerup', up);
-    root.removeEventListener('pointercancel', up);
-    root.removeEventListener('keydown', key);
-    document.removeEventListener('visibilitychange', visibility);
-    try { reset(); } catch (_) {}
-    try { Composite.clear(engine.world, false); } catch (_) {}
-    try { Engine.clear(engine); } catch (_) {}
+
+  return {
+    dispose: () => {
+      active = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      if (drag) {
+        try { drag.el?.releasePointerCapture?.(drag.id); } catch (_) {}
+        drag.el?.classList?.remove('is-dragging');
+        drag = null;
+      }
+      root.removeEventListener('pointerdown', down);
+      root.removeEventListener('pointermove', move);
+      root.removeEventListener('pointerup', up);
+      root.removeEventListener('pointercancel', up);
+      root.removeEventListener('keydown', key);
+      document.removeEventListener('visibilitychange', visibility);
+      try { Events.off(engine, 'collisionStart', onCollision); } catch (_) {}
+      try { reset(); } catch (_) {}
+      try { Composite.clear(engine.world, false); } catch (_) {}
+      try { Engine.clear(engine); } catch (_) {}
+    },
+    shake
   };
 }
