@@ -70,7 +70,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   const [page, setPage] = useState(0);
   const [direction, setDirection] = useState(1);
   const [compact, setCompact] = useState(() => matchMedia('(max-width: 700px), (max-height: 650px)').matches);
-  const [shortPhone, setShortPhone] = useState(() => innerWidth <= 700 && innerHeight < 740);
+  const [isPhone, setIsPhone] = useState(() => matchMedia('(max-width: 700px)').matches);
   const [selected, setSelected] = useState(null);
   const [hovered, setHovered] = useState(null);
   const dialog = useRef(null);
@@ -78,13 +78,14 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   
   useEffect(() => {
     const media = matchMedia('(max-width: 700px), (max-height: 650px)');
-    const update = () => { setCompact(media.matches); setShortPhone(innerWidth <= 700 && innerHeight < 740); setPage(0); };
+    const phoneMedia = matchMedia('(max-width: 700px)');
+    const update = () => { setCompact(media.matches); setIsPhone(phoneMedia.matches); setPage(0); };
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
   
   const filtered = services.filter(service => filter === 'All' || service[0] === filter);
-  const perPage = shortPhone ? 2 : compact ? 4 : 6;
+  const perPage = isPhone ? 1 : compact ? 4 : 6;
   const pages = Math.ceil(filtered.length / perPage);
   
   const goToPage = (newPage) => {
@@ -132,7 +133,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   useLayoutEffect(() => { if (selected && !dialog.current.open) dialog.current.showModal(); }, [selected]); // same frame as the click
   const landed = () => { dialog.current?.close(); opener.current?.focus(); };
   
-  return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`} ref={viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} tabIndex={0} style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
+  return <div className={`services-app ${isPhone ? 'services-readable' : ''}`} ref={viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} tabIndex={0} style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
     <div className="services-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
       <div>
         <span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1>
@@ -147,7 +148,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
     <div style={{ position: 'relative', flex: 1, minHeight: 0, paddingBottom: '20px' }}>
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div key={`${filter}-${page}`} custom={direction} className="service-grid"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gridTemplateRows: 'repeat(2, minmax(0, 1fr))', height: '100%', position: 'absolute', inset: '0 0 20px 0' }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gridTemplateRows: isPhone ? '1fr' : 'repeat(2, minmax(0, 350px))', height: '100%', position: 'absolute', inset: '0 0 20px 0', alignContent: isPhone ? 'stretch' : 'center' }}
           variants={{
             from: dir => ({ opacity: 0, y: dir * 50 }),
             shown: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] } },
