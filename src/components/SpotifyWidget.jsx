@@ -11,55 +11,31 @@ const TRACKS = [
     genre: 'WORKOUT HYPE',
     src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/31/34/24313488-9bec-15cd-90c7-79c3297ca5a2/mzaf_772666532216043993.plus.aac.p.m4a',
     art: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/5a/78/86/5a788626-308e-eb19-80e3-1b3b78ef1fe8/886446194783.jpg/100x100bb.jpg',
-    link: 'https://open.spotify.com/search/Jain%20Makeba'
+    link: 'https://music.youtube.com/watch?v=VI9gIPBH_dM'
   },
   {
-    title: "'Till I Collapse",
-    artist: 'Eminem',
-    genre: 'HEAVY IRON PR',
-    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cf/8f/f1/cf8ff198-b736-395b-6b3f-877048ea5384/mzaf_11538452963444220646.plus.aac.p.m4a',
-    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/dd/5c/e6/dd5ce621-f7d2-f767-7a08-e7a7eaa7870b/00602537526994.rgb.jpg/100x100bb.jpg',
-    link: 'https://open.spotify.com/search/Eminem%20Till%20I%20Collapse'
+    title: 'Satisfaction',
+    artist: 'David Guetta',
+    genre: 'ELECTRO ENERGY',
+    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/25/79/74/257974ed-2207-dd98-7e93-40e97de8ff00/mzaf_15419689746277624085.plus.aac.p.m4a',
+    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/82/f3/99/82f399a3-fda0-cd5e-f07f-a235060d194c/196589382511.jpg/100x100bb.jpg',
+    link: 'https://music.youtube.com/watch?v=HLXAejLADAY'
   },
   {
-    title: "Can't Hold Us",
-    artist: 'Macklemore & Ryan Lewis',
-    genre: 'HIGH ENERGY',
-    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/83/4d/57/834d57bd-505a-2b6a-3a38-cc26f4d34171/mzaf_18284634626678368772.plus.aac.p.m4a',
-    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/91/c1/b5/91c1b5cc-d4f1-da61-d3dc-2dd93e6b0a7d/707541525299.jpg/100x100bb.jpg',
-    link: 'https://open.spotify.com/search/Macklemore%20Cant%20Hold%20Us'
+    title: 'Desire',
+    artist: 'Calvin Harris & Sam Smith',
+    genre: 'HIGH TEMPO DANCE',
+    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/12/d0/81/12d08160-3e2a-7b93-c9ec-55df3c8f8df8/mzaf_3597527060037878054.plus.aac.p.m4a',
+    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/d2/43/52/d2435238-84c2-1264-4e43-928dc5c1b720/196871283625.jpg/100x100bb.jpg',
+    link: 'https://music.youtube.com/watch?v=1JPNFp0f53I'
   },
   {
-    title: 'Stronger',
-    artist: 'Kanye West',
-    genre: 'GYM MOTIVATION',
-    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9e/cc/69/9ecc6918-a8dc-354f-909f-ccc20a0a7a33/mzaf_7863921970418240507.plus.aac.p.m4a',
-    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/39/25/2d/39252d65-2d50-b991-0962-f7a98a761271/00602517483507.rgb.jpg/100x100bb.jpg',
-    link: 'https://open.spotify.com/search/Kanye%20West%20Stronger'
-  },
-  {
-    title: 'INDUSTRY BABY',
-    artist: 'Lil Nas X & Jack Harlow',
-    genre: 'WORKOUT BEAT',
-    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/51/97/7a/51977a71-448a-202a-5e60-756d5dcb6eeb/mzaf_194387576127428058.plus.aac.p.m4a',
-    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/f7/16/67/f7166746-6299-5e54-8c7c-9535e941a53e/886449403929.jpg/100x100bb.jpg',
-    link: 'https://open.spotify.com/search/Lil%20Nas%20X%20Industry%20Baby'
-  },
-  {
-    title: 'Midnight City',
-    artist: 'M83',
-    genre: 'LATE NIGHT RUN',
-    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/09/79/2409794c-3d5d-af26-580e-7dc00ee4f207/mzaf_369629549966021675.plus.aac.p.m4a',
-    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/cb/7b/a9/cb7ba903-b5f1-cc21-90db-7a81b7aa0997/724596951057.jpg/100x100bb.jpg',
-    link: 'https://open.spotify.com/search/M83%20Midnight%20City'
-  },
-  {
-    title: 'Resonance',
-    artist: 'HOME',
-    genre: 'DEEP FOCUS CHILL',
-    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/33/bb/1a/33bb1a1a-1448-3118-6891-639e61784145/mzaf_3810752549913623044.plus.aac.p.m4a',
-    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/4f/13/65/4f1365b0-e97c-c469-c438-2f7d8f204355/872133025584_cover.jpg/100x100bb.jpg',
-    link: 'https://open.spotify.com/search/HOME%20Resonance'
+    title: 'Feel It Still',
+    artist: 'Portugal. The Man',
+    genre: 'UPBEAT CARDIO',
+    src: 'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/63/7c/dd/637cdd7a-3000-0784-28c7-dcbfe99209c8/mzaf_2191237013429360837.plus.aac.p.m4a',
+    art: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/76/fc/2d/76fc2dba-69ea-2718-012d-962dcb661bf1/075679896933.jpg/100x100bb.jpg',
+    link: 'https://music.youtube.com/watch?v=pBkHHoOIIn8'
   }
 ];
 
