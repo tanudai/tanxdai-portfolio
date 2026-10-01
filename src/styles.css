@@ -11,6 +11,7 @@
 @import "./readability.css" layer(components);
 @import "./physics.css" layer(components);
 @import "./avatar.css" layer(components);
+@import "./ux.css" layer(components);
 
 @theme static {
   --font-sans: 'DM Sans', sans-serif;

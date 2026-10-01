@@ -1,4 +1,5 @@
-// Public websites verified on 2026-09-30. Build durations require the owner's input.
+// Public websites verified on 2026-09-30. Build times and engagement status from the owner (2026-10-01).
+// `image`/`mobileImage` may be null until screenshots are captured: the card then shows a 'preview pending' frame and still links to the live site.
 // Optional `result`: a real, verifiable outcome written by the owner. It renders on the project card only when present; never invent one.
 export const projects = [
   {
@@ -8,7 +9,7 @@ export const projects = [
     stack: 'WordPress · WooCommerce · BeTheme',
     type: 'B2B manufacturing & retail',
     year: null,
-    duration: null,
+    duration: '4–6 weeks',
     goal: 'Build a clear B2B-first website for trade buyers, while supporting retail orders.',
     roleNote: 'Custom WordPress website developed by me. Handed over for SEO and ongoing work.',
     liveUrl: 'https://www.aimfaucet.com/',
@@ -22,7 +23,7 @@ export const projects = [
     embeddable: true,
     type: 'Digital product & commerce',
     year: '2026',
-    duration: null,
+    duration: '4–6 weeks',
     goal: 'Build a responsive product website that connects clear reading options, pricing, and a guided purchase flow.',
     liveUrl: 'https://astrodai.in/',
     image: '/projects/astrodai-desktop.webp',
@@ -34,14 +35,15 @@ export const projects = [
     stack: 'Next.js · React · TypeScript · Tailwind CSS · Motion · Three.js',
     type: 'Professional services',
     year: '2026',
-    duration: null,
+    duration: '3 weeks (priority delivery)',
+    engagement: 'Ongoing retainer',
     goal: 'Develop a responsive services website with an interactive eligibility calculator and clear enquiry paths.',
     liveUrl: 'https://canada-immigration-advisory.vercel.app/',
     image: '/projects/canada-advisory-desktop.webp',
     mobileImage: '/projects/canada-advisory-mobile.webp',
   },
   {
-    name: 'Synthesis Capital', type: 'Investment & food technology',
+    name: 'Synthesis Capital', type: 'Investment & food technology', duration: '4–6 weeks',
     goal: 'Present the investment focus, portfolio companies, and team in a clear, responsive experience.',
     buildType: 'Custom-coded website',
     stack: 'Next.js · React',
@@ -49,7 +51,7 @@ export const projects = [
     image: '/projects/synthesis-desktop.webp', mobileImage: '/projects/synthesis-mobile.webp',
   },
   {
-    name: 'CosyToys', type: 'B2B manufacturing & wholesale',
+    name: 'CosyToys', type: 'B2B manufacturing & wholesale', duration: '4–6 weeks',
     goal: 'Help wholesale buyers explore plush toys and find a clear route to a manufacturing enquiry.',
     buildType: 'Custom-coded website',
     stack: 'HTML · CSS · JavaScript',
@@ -59,6 +61,7 @@ export const projects = [
   {
     name: 'Dream Miles Consultants',
     type: 'Travel & visa consultancy',
+    duration: '4–6 weeks',
     goal: 'Build a clear travel website that presents destinations, trip planning, and visa services with a direct route to enquiries.',
     roleNote: 'Custom WordPress website development.',
     buildType: 'Custom WordPress website',
@@ -67,5 +70,36 @@ export const projects = [
     embeddable: true,
     image: '/projects/dream-miles-desktop.webp',
     mobileImage: '/projects/dream-miles-mobile.webp',
+  },
+  // Added 2026-10-01 from the owner's notes. Screenshots pending (the sites could not be reached from the build environment).
+  {
+    name: 'Pastreez',
+    type: 'AI chat integration',
+    buildType: 'AI chat integration',
+    goal: 'Help Pastreez bring an AI chat experience to their customers.',
+    roleNote: 'Helped integrate the AI chat for Pastreez.',
+    duration: '4–6 weeks',
+    liveUrl: 'https://chatting.page/pastreez',
+    image: null, mobileImage: null,
+  },
+  {
+    name: 'Bowood by Niche',
+    type: 'Website integration',
+    buildType: 'Pentacle integration',
+    goal: 'Integrate Pentacle into the Bowood by Niche website.',
+    roleNote: 'Helped integrate Pentacle onto their website.',
+    duration: '4–6 weeks',
+    liveUrl: 'https://bowoodbyniche.com/',
+    image: null, mobileImage: null,
+  },
+  {
+    name: 'Katie UGC',
+    type: 'Creator website',
+    buildType: 'Canva website',
+    goal: 'A website for Katie UGC, built on Canva.',
+    roleNote: 'Worked on the Katie UGC website.',
+    duration: '4–6 weeks',
+    liveUrl: 'https://katieugc.my.canva.site/',
+    image: null, mobileImage: null,
   },
 ];

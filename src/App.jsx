@@ -2,13 +2,13 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 import { duration, ease, spring as springs } from './motion.js';
 import { projects } from './projects.js';
-import LivePreview from './LivePreview.jsx';
+import LivePreview, { initials } from './LivePreview.jsx';
 import Services, { services } from './Services.jsx';
-import { StatusCapsule, ContactDock } from './AppDetails.jsx';
+import { StatusCapsule, ContactDock, ContactActions } from './AppDetails.jsx';
 import Icon from './Icons.jsx';
 import PhysicsPile from './components/PhysicsPile.jsx';
 import MemojiAvatar from './components/MemojiAvatar.jsx';
-import { BorderTrail, SlidingNumber, TextReveal, trackSpotlight, useMagnetic } from './components/motion-kit.jsx';
+import { BorderTrail, TextReveal, trackSpotlight, useMagnetic } from './components/motion-kit.jsx';
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 
@@ -21,7 +21,7 @@ function ProjectPoster({ project, index, active }) {
     const from = event.currentTarget.getBoundingClientRect(), box = dialog.getBoundingClientRect();
     dialog.style.transformOrigin = `${from.left + from.width / 2 - box.left}px ${from.top + from.height / 2 - box.top}px`;
   };
-  const facts = [['My contribution', project.roleNote || 'Custom website development.'], ['Build approach', project.buildType], ['Build time', project.duration || 'To be added']];
+  const facts = [['My contribution', project.roleNote || 'Custom website development.'], ['Build approach', project.buildType], ['Build time', project.duration], ['Engagement', project.engagement]].filter(([, detail]) => detail);
   return <div className={`project-poster live-poster spotlight theme-${index % 4} ${active ? 'is-active' : ''}`}>
     <div className="poster-top"><span>{project.type}</span><span className="live-badge"><i aria-hidden="true" />Live website</span></div>
     {active && <BorderTrail radius={13} size={220} />}
@@ -38,14 +38,19 @@ function ProjectPoster({ project, index, active }) {
       <div className="project-dialog-head"><div><span className="goal-label">PROJECT NOTES</span><h2>{project.name}</h2><p>{project.type}</p></div>
         <button className="close-info" aria-label="Close project information" onClick={() => info.current.close()}><Icon name="close" /></button></div>
       <dl>{facts.map(([term, detail], i) => <div key={term} style={{ '--i': i }}><dt>{term}</dt><dd>{detail}</dd></div>)}
-        <div style={{ '--i': facts.length }}><dt>Technology</dt><dd>{project.stack ? <ul className="stack-chips">{project.stack.split(' · ').map(tech => <li key={tech}>{tech}</li>)}</ul> : 'To be confirmed'}</dd></div></dl>
+        {project.stack && <div style={{ '--i': facts.length }}><dt>Technology</dt><dd><ul className="stack-chips">{project.stack.split(' · ').map(tech => <li key={tech}>{tech}</li>)}</ul></dd></div>}</dl>
       <a className="visit-website" href={project.liveUrl} target="_blank" rel="noopener noreferrer">Open live website <Icon name="arrowUpRight" /></a>
     </dialog>
   </div>;
 }
 
+// Endless deck helpers: the project shown at an unbounded position, and the slot a card takes so it sits nearest that position.
+const wrap = position => ((position % projects.length) + projects.length) % projects.length;
+const slotFor = (i, position) => { const n = projects.length, half = Math.floor(n / 2); return position + ((i - wrap(position) + n + half) % n) - half; };
+
 function ProjectDeck({ enabled }) {
   const [index, setIndex] = useState(0);
+  const [position, setPosition] = useState(0);
   const [direction, setDirection] = useState(1);
   const [height, setHeight] = useState(550);
   const viewport = useRef(null);
@@ -56,15 +61,19 @@ function ProjectDeck({ enabled }) {
   const reducedMotion = useReducedMotion();
   const step = height + 24;
 
-  const goTo = useCallback((nextIndex) => {
-    const next = Math.max(0, Math.min(projects.length - 1, nextIndex));
-    setDirection(next >= selected.current ? 1 : -1);
-    selected.current = next;
-    setIndex(next);
+  // The deck loops endlessly: `selected` is an unbounded position, the visible project is that position modulo the count,
+  // and each card sits in the slot nearest the position (see slotFor), so only an off-screen card ever moves to the other end.
+  const goTo = useCallback((nextPosition) => {
+    setDirection(nextPosition >= selected.current ? 1 : -1);
+    selected.current = nextPosition;
+    setPosition(nextPosition);
+    setIndex(wrap(nextPosition));
     running.current?.stop();
-    if (reducedMotion) y.set(-next * step);
-    else running.current = animate(y, -next * step, springs.deck);
+    if (reducedMotion) y.set(-nextPosition * step);
+    else running.current = animate(y, -nextPosition * step, springs.deck);
   }, [reducedMotion, step, y]);
+  // Jump to a project by index along the shorter way round.
+  const show = useCallback(i => { const n = projects.length, d = ((i - wrap(selected.current)) % n + n + Math.floor(n / 2)) % n - Math.floor(n / 2); goTo(selected.current + d); }, [goTo]);
 
   useEffect(() => {
     const observer = new ResizeObserver(([entry]) => {
@@ -85,11 +94,11 @@ function ProjectDeck({ enabled }) {
       const directions = { ArrowDown: 1, ArrowRight: 1, PageDown: 1, ArrowUp: -1, ArrowLeft: -1, PageUp: -1 };
       if (event.key in directions) { event.preventDefault(); goTo(selected.current + directions[event.key]); }
       else if (event.code === 'Space' && !event.target.closest?.('button, a')) { event.preventDefault(); goTo(selected.current + (event.shiftKey ? -1 : 1)); }
-      else if (event.key === 'Home' || event.key === 'End') { event.preventDefault(); goTo(event.key === 'Home' ? 0 : projects.length - 1); }
+      else if (event.key === 'Home' || event.key === 'End') { event.preventDefault(); show(event.key === 'Home' ? 0 : projects.length - 1); }
     }
     window.addEventListener('keydown', keydown);
     return () => window.removeEventListener('keydown', keydown);
-  }, [enabled, goTo]);
+  }, [enabled, goTo, show]);
 
   useEffect(() => {
     const element = viewport.current;
@@ -124,19 +133,19 @@ function ProjectDeck({ enabled }) {
       initial={reducedMotion ? false : 'from'} animate="shown" exit={reducedMotion ? undefined : 'gone'}>{projects[index].name}</motion.h1></AnimatePresence></div>
     <div id="projects" ref={viewport} tabIndex={0} role="region" aria-roledescription="carousel" aria-label="Projects. Swipe up or down, or use arrow keys.">
       <motion.div className="deck-track" style={{ y }} drag={enabled ? 'y' : false} dragMomentum={false}
-        dragConstraints={{ top: -(projects.length - 1) * step, bottom: 0 }} dragElastic={0.08}
+        dragConstraints={{ top: -(position + 1) * step, bottom: -(position - 1) * step }} dragElastic={0.08}
         onDragStart={() => running.current?.stop()} onDragEnd={finishDrag}
         onPointerCancel={() => goTo(selected.current)}>
         {projects.map((project, i) => <article key={project.name} className={`react-card theme-${i % 4}`}
-          style={{ top: i * step, height }} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${projects.length}: ${project.name}`}
+          style={{ top: slotFor(i, position) * step, height }} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${projects.length}: ${project.name}`}
           aria-hidden={i !== index} inert={i !== index}>
           <ProjectPoster project={project} index={i} active={i === index} />
         </article>)}
       </motion.div>
     </div>
-    <div className="deck-controls"><motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(index - 1)} disabled={index === 0} aria-label="Previous project"><Icon name="arrowUp" /></motion.button>
-      <div className="project-selector"><div className="project-filmstrip" aria-label="Choose a project">{projects.map((project, i) => <button key={project.name} aria-label={`Show ${project.name}`} aria-pressed={i === index} title={project.name} onClick={() => goTo(i)}><img src={project.image} alt="" /><span aria-hidden="true">{String(i + 1).padStart(2, '0')}</span></button>)}</div><span id="deck-count" aria-live="polite"><SlidingNumber value={index + 1} /> / {String(projects.length).padStart(2, '0')}</span><small>SWIPE TO EXPLORE</small></div>
-      <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(index + 1)} disabled={index === projects.length - 1} aria-label="Next project"><Icon name="arrowDown" /></motion.button>
+    <div className="deck-controls"><motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(selected.current - 1)} aria-label="Previous project"><Icon name="arrowUp" /></motion.button>
+      <div className="project-selector"><div className="project-filmstrip" aria-label="Choose a project">{projects.map((project, i) => <button key={project.name} aria-label={`Show ${project.name}`} aria-pressed={i === index} title={project.name} onClick={() => show(i)}>{project.image ? <img src={project.image} alt="" /> : <b className="thumb-mono" aria-hidden="true">{initials(project.name)}</b>}</button>)}</div><div className="deck-dots" aria-hidden="true">{projects.map((project, i) => <i key={project.name} className={i === index ? 'on' : ''} />)}</div><span id="deck-count" className="sr-only" aria-live="polite">{projects[index].name}</span><small>SWIPE TO EXPLORE</small></div>
+      <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(selected.current + 1)} aria-label="Next project"><Icon name="arrowDown" /></motion.button>
     </div>
   </>;
 }
@@ -174,6 +183,6 @@ export default function App() {
     <div className="workspace-shell"><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { setTab(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
     <main data-active-view={tab}><section id="work-panel" role="tabpanel" aria-labelledby="work-tab" hidden={tab !== 'work'} aria-label="Selected work"><ProjectDeck enabled={tab === 'work'} /></section><section id="services-panel" role="tabpanel" aria-labelledby="services-tab" hidden={tab !== 'services'} aria-label="Services">{tab === 'services' && <Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} />}</section><section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" hidden={tab !== 'personal'} aria-label="Personal side"><Personal onWork={() => setTab('work')} onServices={(filter = 'All') => { setServiceFilter(filter); setTab('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></section></main></div>
     <footer><span>TANXDAI © 2026</span><span>A LITTLE INTENTION. A LITTLE PLAY.</span></footer>
-    <dialog ref={contact} id="contact-dialog"><button id="close-contact" aria-label="Close contact" onClick={() => contact.current.close()}><Icon name="close" /></button><span className="eyebrow">CONTACT</span><h2>Discuss your<br />project.</h2><p>{callTopic ? `Let’s talk about ${callTopic.toLowerCase()}.` : 'Let’s talk about your next project.'}</p><p className="contact-placeholder">Booking link coming soon. This is a preview; no call has been scheduled.</p><button id="back-work" onClick={() => contact.current.close()}>Back to exploring <Icon name="arrowUpRight" /></button></dialog>
+    <dialog ref={contact} id="contact-dialog"><button id="close-contact" aria-label="Close contact" onClick={() => contact.current.close()}><Icon name="close" /></button><span className="eyebrow">CONTACT</span><h2>Discuss your<br />project.</h2><p>{callTopic ? `Let’s talk about ${callTopic.toLowerCase()}.` : 'Let’s talk about your next project.'}</p><div className="contact-dialog-actions"><ContactActions key={callTopic} topic={callTopic} /></div><button id="back-work" onClick={() => contact.current.close()}>Back to exploring <Icon name="arrowUpRight" /></button></dialog>
   </>;
 }
