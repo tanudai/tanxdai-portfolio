@@ -55,8 +55,6 @@ function ProjectCard({ project, i, index, position, y, step, height }) {
   const scale = useTransform(y, [yActive + step, yActive, yNextActive], [1, 1, 0.92]);
   const filter = useTransform(y, [yActive + step, yActive, yNextActive], ['brightness(1)', 'brightness(1)', 'brightness(0.5)']);
   const imgY = useTransform(y, [yActive + step, yActive, yNextActive], [80, 0, -80]);
-  
-  const slotFor = (i, p) => i === 0 ? 0 : i <= p ? i - 1 : i;
 
   return <motion.article className={`react-card theme-${i % 4}`}
     style={{ top: slotFor(i, position) * step, height, scale, filter }} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${projects.length}: ${project.name}`}
