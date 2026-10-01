@@ -1,30 +1,6 @@
-/* Memoji-style avatar motion: CSS only. Blink, idle bob, and a wave that repeats every few seconds and on tap. */
-.mj-button { position: relative; appearance: none; background: none; border: 0; padding: 0; margin: 0; display: grid; place-items: center; width: 100%; height: 100%; min-height: 0; cursor: pointer; border-radius: 18px; }
+/* Memoji-style avatar layout. Its motion is SVG-native (see MemojiAvatar.jsx), so there are no CSS keyframes or transform origins here. */
+.mj-button { position: relative; appearance: none; background: none; border: 0; padding: 0; margin: 0; display: grid; place-items: center; width: 100%; height: 100%; min-height: 0; cursor: pointer; border-radius: 18px; -webkit-tap-highlight-color: transparent; }
 .mj-button:focus-visible { outline: 2px solid var(--color-mint); outline-offset: 2px; }
 .bento-avatar .mj-button { flex: 1 1 0; min-height: 0; margin-top: 8px; }
-.mj { position: absolute; inset: 0; margin: auto; height: 100%; max-height: 112px; aspect-ratio: 1; max-width: 100%; overflow: visible; }
 .bento-avatar > span { margin: 2px 0 8px; }
-.mj * { transform-box: view-box; }
-
-.mj-head { animation: mj-bob 6s ease-in-out infinite; }
-.mj-eye { transform-box: fill-box; animation: mj-blink 5.2s infinite; }
-.mj-brows { animation: mj-brows 9s ease-in-out infinite; }
-.mj-grin { opacity: 0; animation: mj-grin 9s ease-in-out infinite; }
-.mj-hand { animation: mj-lift 9s var(--ease-enter) infinite; }
-.mj-hand-wave { animation: mj-wave 9s ease-in-out infinite; }
-
-@keyframes mj-bob { 0%, 100% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-2px) rotate(1.4deg); } 70% { transform: translateY(0) rotate(-1.2deg); } }
-@keyframes mj-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.08); } }
-@keyframes mj-brows { 0%, 6%, 52%, 100% { transform: translateY(0); } 12%, 46% { transform: translateY(-3px); } }
-@keyframes mj-grin { 0%, 8%, 50%, 100% { opacity: 0; } 14%, 44% { opacity: 1; } }
-@keyframes mj-lift { 0%, 6% { transform: translateY(80px); } 14%, 46% { transform: translateY(0); } 54%, 100% { transform: translateY(80px); } }
-@keyframes mj-wave { 0%, 14% { transform: rotate(0); } 20% { transform: rotate(-16deg); } 26% { transform: rotate(14deg); } 32% { transform: rotate(-16deg); } 38% { transform: rotate(14deg); } 44%, 100% { transform: rotate(0); } }
-
-/* While the wave plays the smile widens into a grin (the flat smile fades out with it). */
-.mj-smile { animation: mj-smile 9s ease-in-out infinite; }
-@keyframes mj-smile { 0%, 8%, 50%, 100% { opacity: 1; } 14%, 44% { opacity: 0; } }
-
-@media (prefers-reduced-motion: reduce) {
-  .mj-head, .mj-eye, .mj-brows, .mj-grin, .mj-smile, .mj-hand, .mj-hand-wave { animation: none; }
-  .mj-hand { transform: translateY(80px); }
-}
+.mj { position: absolute; inset: 0; margin: auto; height: 100%; max-height: 112px; aspect-ratio: 1; max-width: 100%; overflow: visible; }
