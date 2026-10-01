@@ -94,21 +94,28 @@ function start(Matter, root, els, reduced, label) {
   }
 
   // Loop: fixed 60Hz steps, runs only while something moves and the page is visible.
+  let active = true;
   let raf = 0, last = 0, acc = 0, drag = null;
-  const awake = () => drag || bodies.some(b => !b.isSleeping);
+  const awake = () => active && (drag || bodies.some(b => !b.isSleeping));
   const frame = now => {
+    if (!active) return;
     raf = 0;
-    acc += Math.min(50, now - (last || now)); last = now;
-    while (acc >= STEP) { Engine.update(engine, STEP); acc -= STEP; }
-    paint();
-    if (awake() && !document.hidden) raf = requestAnimationFrame(frame); else last = 0;
+    try {
+      acc += Math.min(50, now - (last || now)); last = now;
+      while (acc >= STEP) { Engine.update(engine, STEP); acc -= STEP; }
+      paint();
+      if (active && awake() && !document.hidden) raf = requestAnimationFrame(frame); else last = 0;
+    } catch (_) {
+      active = false;
+    }
   };
-  const run = () => { if (!raf && !document.hidden) raf = requestAnimationFrame(frame); };
-  const wake = body => { Sleeping.set(body, false); run(); };
+  const run = () => { if (active && !raf && !document.hidden) raf = requestAnimationFrame(frame); };
+  const wake = body => { if (active) { Sleeping.set(body, false); run(); } };
   paint();
   run();
 
   const hop = body => {
+    if (!active) return;
     wake(body);
     Body.setVelocity(body, { x: (rand() - 0.5) * 6, y: -(6.5 + rand() * 2) });
     Body.setAngularVelocity(body, (rand() - 0.5) * 0.3);
@@ -116,6 +123,7 @@ function start(Matter, root, els, reduced, label) {
 
   const local = e => { const r = root.getBoundingClientRect(); return { x: Math.min(W, Math.max(0, e.clientX - r.left)), y: Math.min(H, Math.max(0, e.clientY - r.top)) }; };
   const down = e => {
+    if (!active) return;
     const el = e.target.closest('.phys-block');
     if (!el || drag || e.button > 0) return;
     const body = bodies[els.indexOf(el)];
@@ -125,11 +133,11 @@ function start(Matter, root, els, reduced, label) {
     Composite.add(engine.world, grip);
     drag = { id: e.pointerId, el, body, grip, x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 };
     el.classList.add('is-dragging');
-    el.setPointerCapture?.(e.pointerId);
+    try { el.setPointerCapture?.(e.pointerId); } catch (_) {}
     wake(body);
   };
   const move = e => {
-    if (!drag || e.pointerId !== drag.id) return;
+    if (!active || !drag || e.pointerId !== drag.id) return;
     drag.moved = Math.max(drag.moved, Math.hypot(e.clientX - drag.x, e.clientY - drag.y));
     drag.grip.pointA = local(e);
     wake(drag.body);
@@ -137,20 +145,21 @@ function start(Matter, root, els, reduced, label) {
   const up = e => {
     if (!drag || e.pointerId !== drag.id) return;
     const { el, body, grip, moved, t } = drag;
-    Composite.remove(engine.world, grip);
-    el.classList.remove('is-dragging');
+    try { el.releasePointerCapture?.(e.pointerId); } catch (_) {}
+    try { Composite.remove(engine.world, grip); } catch (_) {}
+    el.classList?.remove('is-dragging');
     drag = null;
-    if (e.type === 'pointerup' && moved < TAP_MOVE && performance.now() - t < TAP_TIME) hop(body);
+    if (active && e.type === 'pointerup' && moved < TAP_MOVE && performance.now() - t < TAP_TIME) hop(body);
     run();
   };
   const key = e => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (!active || (e.key !== 'Enter' && e.key !== ' ')) return;
     const body = bodies[els.indexOf(e.target.closest('.phys-block'))];
     if (!body) return;
     e.preventDefault();
     hop(body);
   };
-  const visibility = () => { if (!document.hidden) run(); };
+  const visibility = () => { if (active && !document.hidden) run(); };
 
   root.addEventListener('pointerdown', down);
   root.addEventListener('pointermove', move);
@@ -159,15 +168,22 @@ function start(Matter, root, els, reduced, label) {
   root.addEventListener('keydown', key);
   document.addEventListener('visibilitychange', visibility);
   return () => {
-    cancelAnimationFrame(raf);
+    active = false;
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+    if (drag) {
+      try { drag.el?.releasePointerCapture?.(drag.id); } catch (_) {}
+      drag.el?.classList?.remove('is-dragging');
+      drag = null;
+    }
     root.removeEventListener('pointerdown', down);
     root.removeEventListener('pointermove', move);
     root.removeEventListener('pointerup', up);
     root.removeEventListener('pointercancel', up);
     root.removeEventListener('keydown', key);
     document.removeEventListener('visibilitychange', visibility);
-    reset();
-    Composite.clear(engine.world, false);
-    Engine.clear(engine);
+    try { reset(); } catch (_) {}
+    try { Composite.clear(engine.world, false); } catch (_) {}
+    try { Engine.clear(engine); } catch (_) {}
   };
 }
