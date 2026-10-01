@@ -184,6 +184,16 @@ function Personal({ onWork, onServices, onContact }) {
     { key: 'auto', node: <><b>Auto</b><small>Workflows</small></> },
   ];
 
+  const gymItems = [
+    { key: 'plate', node: <><b>20</b><small>KG Plate</small></> },
+    { key: 'db', node: <><b>DB</b><small>Dumbbell</small></> },
+    { key: 'pr', node: <><b>PR</b><small>Heavy</small></> },
+    { key: 'kb', node: <><b>KB</b><small>Kettlebell</small></> },
+    { key: 'h2o', node: <><b>H₂O</b><small>Hydrate</small></> },
+    { key: 'protein', node: <><b>Pro</b><small>Fuel</small></> },
+    { key: 'sleep', node: <><b>8h</b><small>Recovery</small></> },
+  ];
+
   return <div className="personal-bento">
     <article className="bento-intro">
       <span className="bento-label">DESIGN & DEVELOPMENT</span>
@@ -196,14 +206,6 @@ function Personal({ onWork, onServices, onContact }) {
       <motion.span {...useMagnetic()}>Hello <Icon name="arrowUpRight" /></motion.span>
     </motion.div>
 
-    <div className="bento-shortcuts" aria-label="Explore my work">
-      <button onClick={onWork}><span><Icon name="arrowUpRight" /></span>Projects</button>
-      <button onClick={() => onServices()}><span><Icon name="sparkle" /></span>Services</button>
-      <button onClick={onContact}><span><Icon name="at" /></span>Say hello</button>
-      <button onClick={() => onServices('Websites')}><span><Icon name="code" /></span>Websites</button>
-      <button onClick={() => onServices('AI & automation')}><span><Icon name="layers" /></span>AI & Automation</button>
-    </div>
-
     <button className="bento-work" onClick={onWork}>
       <span className="bento-card-top">Selected work <span><Icon name="arrowUpRight" /></span></span>
       <div className="bento-previews">
@@ -213,6 +215,40 @@ function Personal({ onWork, onServices, onContact }) {
       </div>
       <span className="bento-footnote">Explore featured client builds</span>
     </button>
+
+    <article className="bento-fuel">
+      <div className="bento-card-top">
+        <span className="bento-label">OFFLINE FUEL & FOCUS</span>
+        <div className="eq-container" aria-hidden="true">
+          <span className="eq-bar" />
+          <span className="eq-bar" />
+          <span className="eq-bar" />
+          <span className="eq-bar" />
+        </div>
+      </div>
+      <div className="fuel-content">
+        <div className="fuel-pill"><span>☕</span><b>Espresso</b><small>Single Origin</small></div>
+        <div className="fuel-pill"><span>🎧</span><b>Focus Beats</b><small>Synth & Lo-Fi</small></div>
+        <div className="fuel-pill"><span>⌨️</span><b>Custom 65%</b><small>Linear Thock</small></div>
+        <div className="fuel-pill"><span>📖</span><b>Systems & Sci-Fi</b><small>Architecture</small></div>
+      </div>
+    </article>
+
+    <article className="bento-tools">
+      <div className="bento-card-top">
+        <span className="bento-label">TECH TOOLKIT</span>
+        <small className="drag-hint">Drag & toss</small>
+      </div>
+      <PhysicsPile label="Interactive toolkit" variant="tile" items={playgroundItems} />
+    </article>
+
+    <article className="bento-gym">
+      <div className="bento-card-top">
+        <span className="bento-label">IRON & DISCIPLINE</span>
+        <small className="drag-hint">Iron playground</small>
+      </div>
+      <PhysicsPile label="Gym playground" variant="gym" items={gymItems} />
+    </article>
 
     <article className="bento-stats">
       <span className="bento-label">AT A GLANCE</span>
@@ -230,23 +266,6 @@ function Personal({ onWork, onServices, onContact }) {
         <span className="pulse-dot" />
         <span>Available for Q2 projects</span>
       </div>
-    </article>
-
-    <article className="bento-tools">
-      <div className="bento-card-top">
-        <span className="bento-label">INTERACTIVE TOOLKIT</span>
-        <small className="drag-hint">Drag & toss</small>
-      </div>
-      <PhysicsPile label="Interactive toolkit" variant="tile" items={playgroundItems} />
-    </article>
-
-    <article className="bento-collab">
-      <span className="bento-label">HAVE A PROJECT IN MIND?</span>
-      <h2>Let’s work<br />{' '}together.</h2>
-      <p>High-converting websites, fast web apps, and automated AI copilots.</p>
-      <motion.button onClick={onContact} {...useMagnetic()}>
-        Let’s collaborate <span><Icon name="arrowUpRight" /></span>
-      </motion.button>
     </article>
   </div>;
 }

@@ -17,6 +17,11 @@
 .phys-tile { width: 68px; height: 54px; flex-direction: column; gap: 3px; border-radius: 14px; }
 .phys-tile b { font-size: 17px; letter-spacing: -.04em; line-height: 1; color: #ececec; }
 .phys-tile small { font-size: var(--text-label); line-height: 1.1; color: #aaa; }
+.phys-gym { width: 68px; height: 54px; flex-direction: column; gap: 3px; border-radius: 14px; background: linear-gradient(180deg, #302620, #221a15); border: 1px solid #4d3c32; }
+.phys-gym:hover { background: linear-gradient(180deg, #3a2e26, #2a201a); border-color: #ffaa71; }
+.phys-gym b { font-size: 17px; letter-spacing: -.04em; line-height: 1; color: #ffb585; }
+.phys-gym small { font-size: 10px; line-height: 1.1; color: #d4a98a; }
+.phys-gym.is-dragging { border-color: #ffaa71; color: #fff; box-shadow: 0 14px 26px #000b, 0 0 0 1px #ffaa7133, inset 0 1px 0 #ffffff22; }
 
 /* Phones: the two physics cards need room to pile, so they take the full width and the Selected work preview steps aside
    (the Projects shortcut and the Work tab still lead there). Rows share the height; the pile fields keep at least ~60px. */
