@@ -143,7 +143,7 @@ function ProjectDeck({ enabled }) {
   };
 
   return <>
-    <div className="deck-heading">
+    <div className="deck-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
       <div>
         <span className="deck-eyebrow">PROJECT PORTFOLIO</span>
         <AnimatePresence mode="wait" initial={false} custom={direction}>
@@ -154,10 +154,10 @@ function ProjectDeck({ enabled }) {
           </motion.h1>
         </AnimatePresence>
       </div>
-    </div>
-    <div className="deck-controls" style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingBottom: '12px' }}>
-      <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(selected.current - 1)} aria-label="Previous project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
-      <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(selected.current + 1)} aria-label="Next project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
+      <div className="deck-controls" style={{ display: 'flex', gap: '8px', padding: 0 }}>
+        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(selected.current - 1)} aria-label="Previous project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(selected.current + 1)} aria-label="Next project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
+      </div>
     </div>
     <div id="projects" ref={viewport} tabIndex={0} role="region" aria-roledescription="carousel" aria-label="Projects. Swipe up or down, or use arrow keys.">
       <motion.div className="deck-track" style={{ y }} drag={enabled ? 'y' : false} dragMomentum={false}
