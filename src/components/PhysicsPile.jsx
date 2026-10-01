@@ -127,17 +127,18 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
   const wall = (x, y, w, h) => Bodies.rectangle(x, y, w, h, { isStatic: true, friction: 0.6 });
   Composite.add(engine.world, [
     wall(W / 2, H + 30, W * 4, 60),
-    wall(-30, H / 2 - H * 2, 60, H * 6),
-    wall(W + 30, H / 2 - H * 2, 60, H * 6)
+    wall(W / 2, -30, W * 4, 60),
+    wall(-30, H / 2, 60, H * 6),
+    wall(W + 30, H / 2, 60, H * 6)
   ]);
 
   const bodies = [];
   const lanes = Math.max(1, Math.floor(W / (sizes.slice(0, shown).reduce((a, [w]) => a + w, 0) / Math.max(1, shown) + 8)));
-  let y = -10;
   for (let i = 0; i < shown; i++) {
     const el = validEls[i];
     const [w, h] = sizes[i] || [40, 20];
-    y -= h * 1.15;
+    const row = Math.floor(i / lanes);
+    const y = Math.max(15 + h / 2, Math.min(H - h / 2 - 10, 15 + row * (h + 10) + (rand() - 0.5) * 8));
     const shape = el?.dataset?.shape || (el?.classList?.contains('phys-chip') ? 'chip' : 'rect');
     const x = Math.min(W - w / 2, Math.max(w / 2, W * (((i % lanes) + 0.5) / lanes) + (rand() - 0.5) * 24));
     
@@ -359,6 +360,90 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
 
   const visibility = () => { if (active && !document.hidden) run(); };
 
+  // Gyroscope-driven dynamic gravity
+  const baseGy = isGym ? 1.38 : 1.05;
+  let lastGx = 0;
+  let lastGy = baseGy;
+
+  const onOrientation = event => {
+    if (!active) return;
+    const gamma = event.gamma; // Left-to-right tilt in degrees [-90, 90]
+    const beta = event.beta;   // Front-to-back tilt in degrees [-180, 180]
+    if (gamma == null || beta == null) return;
+
+    const degToRad = Math.PI / 180;
+    const radG = gamma * degToRad;
+    const radB = beta * degToRad;
+
+    // Device physical tilt components
+    const devX = Math.sin(radG);
+    const devY = Math.sin(radB);
+
+    // Screen orientation angle (0 for portrait, 90 / 270 for landscape)
+    const screenAngle = (window.screen?.orientation?.angle ?? (window.orientation || 0)) * degToRad;
+    const cosA = Math.cos(screenAngle);
+    const sinA = Math.sin(screenAngle);
+
+    // Screen-space 2D gravity coordinates
+    const sx = devX * cosA - devY * sinA;
+    const sy = devX * sinA + devY * cosA;
+
+    const mag = Math.hypot(sx, sy);
+    let targetGx, targetGy;
+
+    if (mag < 0.12) {
+      // Flat or near-flat resting posture: standard downward gravity
+      targetGx = 0;
+      targetGy = baseGy;
+    } else {
+      // Dynamic tilt vector scaled proportionally to tilt angle
+      const strength = Math.min(1.4, mag * 1.45) * baseGy;
+      targetGx = (sx / mag) * strength;
+      targetGy = (sy / mag) * strength;
+    }
+
+    // Wake resting bodies when orientation vector shifts
+    if (Math.hypot(targetGx - lastGx, targetGy - lastGy) > 0.05) {
+      lastGx = targetGx;
+      lastGy = targetGy;
+      engine.gravity.x = targetGx;
+      engine.gravity.y = targetGy;
+      bodies.forEach(b => {
+        if (b.isSleeping) Sleeping.set(b, false);
+      });
+      run();
+    }
+  };
+
+  let boundOrientation = false;
+  const bindOrientation = () => {
+    if (boundOrientation || !active) return;
+    boundOrientation = true;
+    window.addEventListener('deviceorientation', onOrientation, { passive: true });
+  };
+
+  let pendingGesture = false;
+  const requestGyroPermission = () => {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission()
+        .then(state => {
+          if (state === 'granted') {
+            bindOrientation();
+          }
+        })
+        .catch(() => {});
+    }
+  };
+
+  if (typeof DeviceOrientationEvent !== 'undefined') {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      pendingGesture = true;
+      window.addEventListener('pointerdown', requestGyroPermission, { once: true, passive: true });
+    } else {
+      bindOrientation();
+    }
+  }
+
   root.addEventListener('pointerdown', down);
   root.addEventListener('pointermove', move);
   root.addEventListener('pointerup', up);
@@ -371,6 +456,12 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
       active = false;
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
+      if (boundOrientation) {
+        window.removeEventListener('deviceorientation', onOrientation);
+      }
+      if (pendingGesture) {
+        window.removeEventListener('pointerdown', requestGyroPermission);
+      }
       if (drag) {
         try { drag.el?.releasePointerCapture?.(drag.id); } catch (_) {}
         drag.el?.classList?.remove('is-dragging');
