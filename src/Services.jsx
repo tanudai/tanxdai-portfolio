@@ -133,17 +133,21 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   const landed = () => { dialog.current?.close(); opener.current?.focus(); };
   
   return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`} ref={viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} tabIndex={0} style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
-    <div className="services-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div className="services-heading">
       <div>
         <span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1>
         <p>Development, AI integrations, and technical advice.</p>
       </div>
+    </div>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
+      <div className="service-filters" aria-label="Filter services" style={{ marginBottom: 0 }}>
+        {['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}
+      </div>
       <div className="deck-controls" style={{ display: 'flex', gap: '8px', padding: 0 }}>
-        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goToPage(page - 1)} disabled={page === 0} aria-label="Previous services" style={{ width: 38, height: 38, background: 'transparent', borderColor: 'transparent' }}><Icon name="arrowUp" /></motion.button>
-        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goToPage(page + 1)} disabled={page === pages - 1} aria-label="Next services" style={{ width: 38, height: 38, background: 'transparent', borderColor: 'transparent' }}><Icon name="arrowDown" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goToPage(page - 1)} disabled={page === 0} aria-label="Previous services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goToPage(page + 1)} disabled={page === pages - 1} aria-label="Next services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
       </div>
     </div>
-    <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
     <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div key={`${filter}-${page}`} custom={direction} className="service-grid"
