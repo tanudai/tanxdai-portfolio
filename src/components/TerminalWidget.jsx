@@ -1,20 +1,36 @@
 import { useState, useRef, useEffect } from 'react';
 
 const COMMANDS = {
-  whoami: 'Tanxdai · Full-stack Engineer & AI Builder.\nCrafting ultra-responsive web apps & intelligent automations.',
-  stack: 'Core: React 19 · TypeScript · Python · Vite · Tailwind · Framer Motion\nAI/ML: PyTorch · Gemini Live · LLM Workflows · Agents · Vector DBs',
-  motto: 'Precision in code. Discipline in iron. Zero bloat.',
-  specs: 'Architecture: Apple Silicon M-Series · macOS Darwin\nUptime: 99.98% · Status: Available for select client missions',
+  whoami: 'Tanxdai · Full-Stack Engineer & AI Craftsman.\nPhilosophy: Fast interfaces, intelligent agents, zero fluff.\nMission: Building bespoke web products for select clients.',
+  stack: 'Frontend: React 19 · TypeScript · Next.js · Vite · Motion\nAI & ML: Gemini Live API · PyTorch · Agents · Vector DBs\nBackend: Python · Node.js · Fastify · Docker · PostgreSQL · Redis',
+  gym: 'Discipline: Consistency over motivation. 5-day hyper-split.\nIron PRs: Deadlift 200kg · Squat 160kg · Bench 120kg\nRecovery: Sleep 8h · Clean fuel · Cold focus',
+  specs: 'Host: Apple Silicon M3 Max · 64GB Unified Memory\nKernel: Darwin 24.2.0 arm64 · Status: Online & Available\nLatency: 12ms · Uptime: 99.98% over 5+ production years',
+  motto: 'Precision in code. Discipline in iron. Zero compromise.',
+  about: 'I build bespoke web interfaces and AI-powered products.\n5+ years of building. Working remotely, worldwide.\nEqual parts design detail and engineering.',
+  offclock: 'Away from the editor: iron, discipline, and a good soundtrack.\nThe gym has progressive overload. Code has progressive enhancement.',
+  music: 'Current setup: a little vinyl, a little volume, a lot of focus.\nTap the record below for a preview.\nNo terminal command can improve your music taste. Yet.',
+  debug: 'Checking for bugs…\nFound one between the keyboard and the chair.\nPatch: stand up, stretch, try again.',
+  sudo: 'Permission denied.\nYou can have admin access to the playlist, not my life choices.',
+  ping: 'Pinging motivation…\nRequest timed out.\nDiscipline is handling the request instead.',
+  fortune: 'Your next great idea is probably hiding behind one small, unfinished task.\nShip that first.',
 };
 
-export default function TerminalWidget() {
-  const [history, setHistory] = useState([
-    { cmd: 'init', output: 'TANXDAI-OS Kernel v4.2.0-release\nType or click commands below to inspect system.' },
-    { cmd: 'whoami', output: COMMANDS.whoami },
+export default function TerminalWidget({ compact = false }) {
+  const [history, setHistory] = useState(compact ? [{ cmd: 'whoami', output: COMMANDS.whoami }] : [
+    {
+      cmd: 'init',
+      output: 'TANXDAI-OS v4.2.0 (arm64-apple-darwin) · Ready\nAll systems operational. Tap below to query runtime.'
+    },
+    {
+      cmd: 'whoami',
+      output: COMMANDS.whoami
+    }
   ]);
   const [typingText, setTypingText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const bottomRef = useRef(null);
+  const typingInterval = useRef(null);
+  useEffect(() => () => clearInterval(typingInterval.current), []);
 
   const runCommand = (cmdKey) => {
     if (isTyping) return;
@@ -28,8 +44,8 @@ export default function TerminalWidget() {
     setTypingText('');
 
     let idx = 0;
-    const interval = setInterval(() => {
-      idx += 2;
+    const interval = typingInterval.current = setInterval(() => {
+      idx += 3;
       if (idx >= output.length) {
         clearInterval(interval);
         setHistory((prev) => [...prev, { cmd: cmdKey, output }]);
@@ -38,12 +54,35 @@ export default function TerminalWidget() {
       } else {
         setTypingText(output.slice(0, idx));
       }
-    }, 14);
+    }, 12);
   };
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });
-  }, [history, typingText]);
+    if (compact) {
+      const body = bottomRef.current?.parentElement;
+      if (body) body.scrollTop = body.scrollHeight;
+    } else {
+      bottomRef.current?.scrollIntoView?.({ behavior: 'smooth' });
+    }
+  }, [history, typingText, compact]);
+
+  const commandPresets = [
+    { key: 'whoami', label: '👤 whoami' },
+    { key: 'stack', label: '⚡ stack' },
+    { key: 'gym', label: '🏋️ gym' },
+    { key: 'specs', label: '💻 specs' },
+    ...(compact ? [
+      { key: 'about', label: 'about' },
+      { key: 'offclock', label: 'offclock' },
+      { key: 'music', label: 'music' },
+      { key: 'motto', label: 'motto' },
+      { key: 'debug', label: 'debug' },
+      { key: 'sudo', label: 'sudo' },
+      { key: 'ping', label: 'ping' },
+      { key: 'fortune', label: 'fortune' },
+    ] : []),
+    { key: 'clear', label: '🧹 clear' },
+  ];
 
   return (
     <div className="crt-terminal-container">
@@ -51,14 +90,14 @@ export default function TerminalWidget() {
         <div className="crt-scanlines" aria-hidden="true" />
         
         {/* CRT Header Bar */}
-        <div className="crt-header">
+        <div className="crt-header" data-decorative="true">
           <div className="crt-dots" aria-hidden="true">
             <span className="crt-dot red" />
             <span className="crt-dot yellow" />
             <span className="crt-dot green" />
           </div>
           <span className="crt-title">tanxdai@devbox:~ (tty1)</span>
-          <span className="crt-tag">CRT-80x24</span>
+          <span className="crt-tag">LIVE · 99.98%</span>
         </div>
 
         {/* Terminal Output Area */}
@@ -95,20 +134,37 @@ export default function TerminalWidget() {
         </div>
 
         {/* Quick Executable Command Buttons */}
-        <div className="crt-footer-nav" aria-label="Terminal commands">
-          <span className="crt-hint">EXEC:</span>
-          {['whoami', 'stack', 'motto', 'specs', 'clear'].map((key) => (
-            <button
-              key={key}
-              type="button"
-              className="crt-btn"
-              onClick={() => runCommand(key)}
-              disabled={isTyping}
-            >
-              {key}
-            </button>
-          ))}
-        </div>
+        {compact ? (
+          <div className="crt-compact-nav" aria-label="Terminal commands">
+            <span className="crt-hint" aria-hidden="true">$</span>
+            {commandPresets.slice(0, 4).map((preset) => (
+              <button
+                key={preset.key}
+                type="button"
+                className="crt-btn"
+                onClick={() => runCommand(preset.key)}
+                disabled={isTyping}
+              >
+                {preset.key}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="crt-footer-nav" aria-label="Terminal commands">
+            <span className="crt-hint">EXEC:</span>
+            {commandPresets.map((preset) => (
+              <button
+                key={preset.key}
+                type="button"
+                className="crt-btn"
+                onClick={() => runCommand(preset.key)}
+                disabled={isTyping}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

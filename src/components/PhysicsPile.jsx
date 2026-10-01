@@ -85,7 +85,9 @@ const PhysicsPile = forwardRef(function PhysicsPile({ items, variant = 'tile', l
           type="button"
           className={`phys-block phys-${variant}`}
           tabIndex={reduced ? -1 : 0}
+          aria-label={item.label || item.key}
           data-i={i}
+          data-kind={item.key}
           data-shape={item.shape || 'rect'}
         >
           {item.node}

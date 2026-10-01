@@ -353,3 +353,39 @@ export function ChalkBlock() {
     </svg>
   );
 }
+
+
+export function ResistanceBand() {
+  return <svg width="58" height="54" viewBox="0 0 64 60" className="gym-asset" aria-hidden="true">
+    <ellipse cx="32" cy="30" rx="21" ry="23" fill="none" stroke="#554382" strokeWidth="11" />
+    <ellipse cx="31" cy="28" rx="21" ry="23" fill="none" stroke="#9b82c9" strokeWidth="3" />
+    <path d="M18 43q14 9 28-1" fill="none" stroke="#362859" strokeWidth="3" />
+  </svg>;
+}
+
+export function JumpRope() {
+  return <svg width="64" height="54" viewBox="0 0 70 60" className="gym-asset" aria-hidden="true">
+    <path d="M18 39C-9 2 67-5 54 28S15 52 43 13" fill="none" stroke="#b7c4b9" strokeWidth="3" />
+    <g transform="rotate(-20 19 43)"><rect x="13" y="30" width="11" height="26" rx="4" fill="#3b4e43" stroke="#91a89a" /><path d="M15 36h7m-7 5h7m-7 5h7" stroke="#142b1e" strokeWidth="2" /></g>
+    <g transform="rotate(20 47 25)"><rect x="42" y="12" width="11" height="26" rx="4" fill="#3b4e43" stroke="#91a89a" /><path d="M44 18h7m-7 5h7m-7 5h7" stroke="#142b1e" strokeWidth="2" /></g>
+  </svg>;
+}
+
+export function FoamRoller() {
+  return <svg width="64" height="46" viewBox="0 0 72 52" className="gym-asset" aria-hidden="true">
+    <rect x="10" y="8" width="52" height="36" rx="9" fill="#467d83" stroke="#82b4b8" />
+    <path d="M22 10v32m10-32v32m10-32v32m10-32v32" stroke="#254e55" strokeWidth="4" />
+    <ellipse cx="12" cy="26" rx="9" ry="18" fill="#69a0a5" stroke="#9cc6c8" />
+    <ellipse cx="12" cy="26" rx="4" ry="10" fill="#18363d" />
+    <path d="M23 14h34" stroke="#b1d9da" opacity=".5" />
+  </svg>;
+}
+
+export function GymTowel() {
+  return <svg width="58" height="48" viewBox="0 0 64 54" className="gym-asset" aria-hidden="true">
+    <path d="M8 9h47l4 35H6z" fill="#b7c5b5" stroke="#e4ebe0" strokeWidth="1.5" />
+    <path d="M8 14h47l4 30H7z" fill="#8d9e8d" />
+    <path d="M13 16v25m5-25v25m29-25v25m5-25v25" stroke="#dce5d8" strokeWidth="2" />
+    <path d="M7 45h52M10 48h46" stroke="#627864" strokeWidth="2" />
+  </svg>;
+}

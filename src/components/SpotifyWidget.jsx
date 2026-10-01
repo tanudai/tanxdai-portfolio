@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 
 const TRACKS = [
   {
@@ -59,18 +60,25 @@ const TRACKS = [
   }
 ];
 
-export default function SpotifyWidget() {
+export default function SpotifyWidget({ compact = false }) {
+  const reducedMotion = useReducedMotion();
+  const [expanded, setExpanded] = useState(false);
+  const [playbackError, setPlaybackError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [trackIdx, setTrackIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(30);
   const audioRef = useRef(null);
+  const recordButtonRef = useRef(null);
 
   const current = TRACKS[trackIdx];
 
   // Sync audio source when trackIdx changes
   useEffect(() => {
     if (!audioRef.current) return;
+    setPlaybackError('');
+    setCurrentTime(0);
     audioRef.current.src = current.src;
     audioRef.current.load();
     if (isPlaying) {
@@ -82,28 +90,34 @@ export default function SpotifyWidget() {
 
   // Clean up audio on unmount
   useEffect(() => {
+    const audio = audioRef.current;
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
+      if (audio) {
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load();
       }
     };
   }, []);
 
   const handleTogglePlay = (e) => {
     e.stopPropagation();
+    setExpanded(true);
+    if (compact && !expanded && isPlaying) return;
+    setPlaybackError('');
     if (!audioRef.current) return;
 
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      setLoading(true);
       audioRef.current.play().then(() => {
         setIsPlaying(true);
-      }).catch(err => {
-        console.warn('Playback error:', err);
+      }).catch(() => {
+        setPlaybackError('Preview unavailable. Try another track.');
         setIsPlaying(false);
-      });
+      }).finally(() => setLoading(false));
     }
   };
 
@@ -138,6 +152,90 @@ export default function SpotifyWidget() {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  if (compact) return (
+    <div className={`mini-vinyl-bar ${isPlaying ? 'is-playing' : ''}`}>
+      <audio
+        ref={audioRef}
+        src={current.src}
+        preload="metadata"
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleEnded}
+        onPlaying={() => { setIsPlaying(true); setLoading(false); }}
+        onPause={() => setIsPlaying(false)}
+        onError={() => { setIsPlaying(false); setLoading(false); setPlaybackError('Preview unavailable.'); }}
+      />
+      <button
+        ref={recordButtonRef}
+        type="button"
+        className={`mini-vinyl-disc ${isPlaying ? 'spinning' : ''}`}
+        onClick={handleTogglePlay}
+        aria-label={isPlaying ? 'Pause music' : 'Play music'}
+        title={`${current.title} by ${current.artist}`}
+        disabled={loading}
+      >
+        <span className="mini-vinyl-grooves" aria-hidden="true">
+          <img src={current.art} alt="" className="mini-vinyl-art" />
+        </span>
+        <span className="mini-vinyl-hole" aria-hidden="true" />
+      </button>
+      <div className="mini-vinyl-info">
+        <div className="mini-vinyl-headline">
+          <span className="mini-track-title">{current.title}</span>
+          <span className="mini-track-sep" aria-hidden="true">·</span>
+          <span className="mini-track-artist">{current.artist}</span>
+        </div>
+        <div className="mini-vinyl-subline">
+          <span className="mini-badge-genre">{loading ? 'LOADING AUDIO…' : isPlaying ? 'NOW PLAYING' : current.genre}</span>
+        </div>
+      </div>
+      <div className="mini-vinyl-actions">
+        <button
+          type="button"
+          className="mini-ctrl-btn"
+          onClick={handlePrev}
+          aria-label="Previous track"
+          title="Previous track"
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <line x1="5" y1="5" x2="5" y2="19" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <polygon points="19,5 9,12 19,19" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          className={`mini-ctrl-btn mini-play-btn ${isPlaying ? 'is-playing' : ''}`}
+          onClick={handleTogglePlay}
+          aria-label={isPlaying ? 'Pause music' : 'Play music'}
+          title={isPlaying ? 'Pause' : 'Play'}
+          disabled={loading}
+        >
+          {isPlaying ? (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <rect x="5" y="4" width="4" height="16" rx="1" />
+              <rect x="15" y="4" width="4" height="16" rx="1" />
+            </svg>
+          ) : (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <polygon points="6,4 20,12 6,20" />
+            </svg>
+          )}
+        </button>
+        <button
+          type="button"
+          className="mini-ctrl-btn"
+          onClick={handleNext}
+          aria-label="Next track"
+          title="Next track"
+        >
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="5,5 15,12 5,19" />
+            <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className={`spotify-card ${isPlaying ? 'is-playing' : ''}`}>
       {/* Hidden Native Audio Element */}
@@ -147,7 +245,7 @@ export default function SpotifyWidget() {
         preload="metadata"
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded}
-        onError={() => setIsPlaying(false)}
+        onError={() => { setIsPlaying(false); setPlaybackError('Preview unavailable. Try another track.'); }}
       />
 
       <div className="spotify-top-row">
@@ -165,7 +263,10 @@ export default function SpotifyWidget() {
 
       <div className="spotify-main">
         {/* Spinning Vinyl Record with Real Album Art */}
-        <div
+        <button
+          type="button"
+          aria-label={isPlaying ? "Pause music" : compact ? "Play music and expand player" : "Play music"}
+          aria-expanded={compact ? expanded : undefined}
           className={`vinyl-disc ${isPlaying ? 'spinning' : ''}`}
           title={`${current.title} by ${current.artist}`}
           onClick={handleTogglePlay}
@@ -184,7 +285,7 @@ export default function SpotifyWidget() {
             <span className="vinyl-center-pin" />
           </div>
           <span className="vinyl-sheen" />
-        </div>
+        </button>
 
         {/* Track Info */}
         <div className="spotify-info">
@@ -254,6 +355,46 @@ export default function SpotifyWidget() {
             </svg>
           </button>
         </div>
+      </div>
+
+      {/* Playlist Quick Pick Grid (Fit without horizontal scroll) */}
+      <div className="spotify-playlist" role="listbox" aria-label="Workout and focus tracks">
+        {TRACKS.slice(0, 4).map((t, idx) => {
+          const isCurrent = idx === trackIdx;
+          return (
+            <button
+              key={t.title}
+              type="button"
+              className={`spotify-track-chip ${isCurrent ? 'active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isCurrent) {
+                  handleTogglePlay(e);
+                } else {
+                  setTrackIdx(idx);
+                  setIsPlaying(true);
+                }
+              }}
+              role="option"
+              aria-selected={isCurrent}
+            >
+              <span className="track-chip-icon">
+                {isCurrent && isPlaying ? (
+                  <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="5" y="4" width="4" height="16" rx="1" />
+                    <rect x="15" y="4" width="4" height="16" rx="1" />
+                  </svg>
+                ) : (
+                  <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="6,4 20,12 6,20" />
+                  </svg>
+                )}
+              </span>
+              <span className="track-chip-name">{t.title}</span>
+              <span className="track-chip-artist">{t.artist.split('&')[0].trim()}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

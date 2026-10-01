@@ -37,7 +37,7 @@ button:not(:disabled){transition:background .18s,box-shadow .18s}button:not(:dis
 /* Personal: a compact, reference-inspired bento composition. */
 #personal-panel{display:flex;align-items:center;justify-content:center;padding:20px 0;min-height:0;height:100%}
 .personal-container{display:flex;flex-direction:column;width:100%;height:100%;align-items:center;justify-content:center;min-height:0}
-.personal-mobile-nav{display:none}
+.personal-mobile-header,.personal-mobile-nav,.personal-mobile-dots,.intro-status-chips,.phys-sub-nav,.spotify-playlist{display:none}
 .personal-bento{width:min(900px,100%);height:min(720px,100%);display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:1.15fr 1.55fr 1.65fr;gap:12px;color:#eeefed}
 .personal-bento>article,.personal-bento>button,.bento-avatar{min-height:0;min-width:0;background:linear-gradient(145deg,#1c231f,#131815);border:1px solid rgba(255,255,255,0.08);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 10px 28px rgba(0,0,0,0.35);text-align:left;overflow:hidden;transition:border-color .22s ease,box-shadow .22s ease,transform .22s ease}
 .personal-bento>article:hover,.personal-bento>button:hover,.bento-avatar:hover{border-color:rgba(183,239,207,0.32);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1),0 14px 34px rgba(0,0,0,0.45);transform:translateY(-2px)}
@@ -114,58 +114,8 @@ button:not(:disabled){transition:background .18s,box-shadow .18s}button:not(:dis
 .spotify-btn.play-btn{background:rgba(29,185,84,0.2);border-color:rgba(29,185,84,0.5);color:#1db954}
 .spotify-btn.play-btn:hover{background:#1db954;color:#0b110e}
 @media(max-width:600px){
-  #personal-panel{padding:6px 0 0!important;display:flex!important;flex-direction:column!important;height:100%!important;max-height:100%!important;min-height:0!important;overflow:hidden!important}
-  .personal-container{display:flex;flex-direction:column;height:100%;max-height:100%;min-height:0;overflow:hidden;gap:8px;width:100%;flex:1 1 0}
-  .personal-mobile-nav{display:flex;align-items:center;justify-content:space-between;background:rgba(18,24,21,0.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.08);border-radius:9999px;padding:3px;flex-shrink:0;gap:3px;width:100%;box-shadow:0 4px 14px rgba(0,0,0,0.45);position:relative;z-index:10}
-  .p-nav-btn{flex:1;position:relative;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;font-weight:500;color:#92a497;background:transparent;border:none;border-radius:9999px;padding:6px 10px;cursor:pointer;transition:color .18s ease;min-height:32px;user-select:none;-webkit-tap-highlight-color:transparent}
-  .p-nav-btn:hover{color:#d6e8dc}
-  .p-nav-btn.active{color:#b7efcf;font-weight:600}
-  .p-nav-icon{font-size:12px;line-height:1;display:inline-block}
-  .p-nav-active-pill{position:absolute;inset:0;background:rgba(183,239,207,0.12);border:1px solid rgba(183,239,207,0.32);border-radius:9999px;box-shadow:0 2px 8px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.1);z-index:-1;pointer-events:none}
-  .personal-bento{flex:1 1 0;min-height:0;height:100%;max-height:100%;width:100%;display:flex;flex-direction:column;gap:8px;overflow:hidden}
-  .personal-bento>article,.personal-bento>button,.personal-bento>div{border-radius:16px}
-  .personal-bento>.bento-work{display:none!important}
-  
-  /* Mobile Page 0: Profile & Vibe */
-  .personal-container[data-mobile-page="0"] .bento-tools,
-  .personal-container[data-mobile-page="0"] .bento-gym,
-  .personal-container[data-mobile-page="0"] .bento-terminal{display:none!important}
-  .personal-container[data-mobile-page="0"] .personal-bento{display:grid!important;grid-template-columns:1fr 115px!important;grid-template-rows:auto 1fr!important;gap:8px!important;height:100%!important}
-  .personal-container[data-mobile-page="0"] .bento-intro{grid-column:1!important;grid-row:1!important;padding:12px 14px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;border-radius:16px!important}
-  .personal-container[data-mobile-page="0"] .bento-intro .bento-label{font-size:8px!important;letter-spacing:1px!important}
-  .personal-container[data-mobile-page="0"] .bento-intro h1{font-size:clamp(18px,5.2vw,23px)!important;margin:3px 0!important;line-height:1.15!important}
-  .personal-container[data-mobile-page="0"] .bento-intro p{font-size:11px!important;line-height:1.35!important;margin:0!important;color:#a2b0a5!important}
-  .personal-container[data-mobile-page="0"] .bento-avatar{grid-column:2!important;grid-row:1!important;padding:6px!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:16px!important;overflow:visible!important;position:relative!important}
-  .personal-container[data-mobile-page="0"] .bento-avatar .avatar-wrapper{height:100%!important}
-  .personal-container[data-mobile-page="0"] .bento-avatar .mj{max-height:85px!important}
-  .personal-container[data-mobile-page="0"] .bento-stats{grid-column:1 / -1!important;grid-row:2!important;padding:12px 14px!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important;border-radius:16px!important;min-height:0!important;flex:1 1 0!important}
-  .personal-container[data-mobile-page="0"] .stats-grid{display:flex!important;justify-content:space-between!important;gap:12px!important;margin:2px 0 6px!important}
-  .personal-container[data-mobile-page="0"] .stat-item b{font-size:20px!important}
-  .personal-container[data-mobile-page="0"] .stat-item small{font-size:9.5px!important}
-  .personal-container[data-mobile-page="0"] .spotify-card{padding:7px 10px!important}
-  .personal-container[data-mobile-page="0"] .vinyl-disc{width:32px!important;height:32px!important}
-
-  /* Mobile Page 1: Physics (50/50 Toolkit & Iron) */
-  .personal-container[data-mobile-page="1"] .bento-intro,
-  .personal-container[data-mobile-page="1"] .bento-avatar,
-  .personal-container[data-mobile-page="1"] .bento-work,
-  .personal-container[data-mobile-page="1"] .bento-terminal,
-  .personal-container[data-mobile-page="1"] .bento-stats{display:none!important}
-  .personal-container[data-mobile-page="1"] .personal-bento{display:flex!important;flex-direction:column!important;height:100%!important;gap:8px!important}
-  .personal-container[data-mobile-page="1"] .bento-tools,
-  .personal-container[data-mobile-page="1"] .bento-gym{flex:1 1 0!important;height:50%!important;max-height:50%!important;min-height:0!important;display:flex!important;flex-direction:column!important;padding:10px 12px!important;border-radius:16px!important}
-  .personal-container[data-mobile-page="1"] .bento-tools .phys-field,
-  .personal-container[data-mobile-page="1"] .bento-gym .phys-field{flex:1 1 0!important;min-height:0!important;height:100%!important}
-
-  /* Mobile Page 2: Retro CRT Hacker Terminal */
-  .personal-container[data-mobile-page="2"] .bento-intro,
-  .personal-container[data-mobile-page="2"] .bento-avatar,
-  .personal-container[data-mobile-page="2"] .bento-work,
-  .personal-container[data-mobile-page="2"] .bento-tools,
-  .personal-container[data-mobile-page="2"] .bento-gym,
-  .personal-container[data-mobile-page="2"] .bento-stats{display:none!important}
-  .personal-container[data-mobile-page="2"] .personal-bento{display:flex!important;flex-direction:column!important;height:100%!important}
-  .personal-container[data-mobile-page="2"] .bento-terminal{flex:1 1 0!important;height:100%!important;min-height:0!important;width:100%!important;display:flex!important;flex-direction:column!important;border-radius:16px!important}
+  #personal-panel{padding:6px 10px 4px!important;display:flex!important;flex-direction:column!important;height:100%!important;max-height:100%!important;min-height:0!important;overflow:hidden!important}
+  .spotify-playlist{display:none!important}
 }
 @media(max-height:700px){.bento-intro .bento-label{display:none}.bento-footnote{display:none}.bento-previews{bottom:10px}}
 @media(max-height:480px) and (min-width:701px){.personal-bento{grid-template-rows:1fr 1fr;grid-template-columns:repeat(12,minmax(0,1fr))}.bento-intro{grid-column:span 5}.bento-avatar{grid-column:span 2}.bento-work{grid-column:span 5}.bento-tools{grid-column:span 4}.bento-gym{grid-column:span 4}.bento-stats{grid-column:span 4}}

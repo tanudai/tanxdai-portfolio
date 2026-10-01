@@ -10,7 +10,7 @@ import PhysicsPile from './components/PhysicsPile.jsx';
 import MemojiAvatar from './components/MemojiAvatar.jsx';
 import { BorderTrail, TextReveal, trackSpotlight, useMagnetic, useTilt } from './components/motion-kit.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-import { Plate20KG, HexDumbbell, Kettlebell24KG, OlympicClamp, ShakerBottle, SteelFlask, HeavyGripper, ChalkBlock } from './components/GymIcons.jsx';
+import { Plate20KG, HexDumbbell, Kettlebell24KG, OlympicClamp, ShakerBottle, SteelFlask, HeavyGripper, ChalkBlock, ResistanceBand, JumpRope, FoamRoller, GymTowel } from './components/GymIcons.jsx';
 import TerminalWidget from './components/TerminalWidget.jsx';
 import SpotifyWidget from './components/SpotifyWidget.jsx';
 
@@ -178,35 +178,14 @@ function Personal({ onWork, onServices, onContact }) {
   const avatarTilt = useTilt(16);
   const toolsRef = useRef(null);
   const gymRef = useRef(null);
-  const [mobilePage, setMobilePage] = useState(0);
-
-  const touchStartX = useRef(null);
-  const touchStartY = useRef(null);
-  const handleTouchStart = e => {
-    if (e.target.closest('.phys-field') || e.target.closest('.crt-body') || e.target.closest('.spotify-card') || e.target.closest('.personal-mobile-nav')) return;
-    if (e.touches.length === 1) {
-      touchStartX.current = e.touches[0].clientX;
-      touchStartY.current = e.touches[0].clientY;
-    }
-  };
-  const handleTouchEnd = e => {
-    if (touchStartX.current === null) return;
-    const diffX = touchStartX.current - e.changedTouches[0].clientX;
-    const diffY = touchStartY.current !== null ? Math.abs(touchStartY.current - e.changedTouches[0].clientY) : 0;
-    if (Math.abs(diffX) > 40 && Math.abs(diffX) > diffY * 1.2) {
-      if (diffX > 40 && mobilePage < 2) {
-        e.stopPropagation();
-        setMobilePage(p => p + 1);
-        try { navigator.vibrate?.(8); } catch (_) {}
-      } else if (diffX < -40 && mobilePage > 0) {
-        e.stopPropagation();
-        setMobilePage(p => p - 1);
-        try { navigator.vibrate?.(8); } catch (_) {}
-      }
-    }
-    touchStartX.current = null;
-    touchStartY.current = null;
-  };
+  const [activePhysics, setActivePhysics] = useState('gym');
+  const [isPhone, setIsPhone] = useState(() => window.matchMedia('(max-width: 600px)').matches);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 600px)');
+    const sync = () => setIsPhone(media.matches);
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
 
   const playgroundItems = [
     { key: 'react', node: <><b>Re</b><small>React</small></> },
@@ -217,6 +196,12 @@ function Personal({ onWork, onServices, onContact }) {
     { key: 'wp', node: <><b>WP</b><small>WordPress</small></> },
     { key: 'motion', node: <><b>M</b><small>Motion</small></> },
     { key: 'auto', node: <><b>Auto</b><small>Workflows</small></> },
+    ...(isPhone ? [
+      { key: 'node', node: <><b>JS</b><small>Node.js</small></> },
+      { key: 'docker', node: <><b>DK</b><small>Docker</small></> },
+      { key: 'postgres', node: <><b>SQL</b><small>Postgres</small></> },
+      { key: 'redis', node: <><b>R</b><small>Redis</small></> },
+    ] : []),
   ];
 
   const gymItems = [
@@ -228,117 +213,173 @@ function Personal({ onWork, onServices, onContact }) {
     { key: 'flask', shape: 'rect', node: <SteelFlask /> },
     { key: 'gripper', shape: 'rect', node: <HeavyGripper /> },
     { key: 'chalk', shape: 'rect', node: <ChalkBlock /> },
+    ...(isPhone ? [
+      { key: 'band', label: 'Resistance band', shape: 'circle', node: <ResistanceBand /> },
+      { key: 'rope', label: 'Jump rope', shape: 'rect', node: <JumpRope /> },
+      { key: 'roller', label: 'Foam roller', shape: 'rect', node: <FoamRoller /> },
+      { key: 'towel', label: 'Gym towel', shape: 'rect', node: <GymTowel /> },
+    ] : []),
   ];
 
   return (
-    <div
-      className="personal-container"
-      data-mobile-page={mobilePage}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
-      <div className="personal-mobile-nav" role="tablist" aria-label="Personal sections">
-        {[
-          { id: 0, label: 'Profile', icon: '👤' },
-          { id: 1, label: 'Physics', icon: '⚡' },
-          { id: 2, label: 'Terminal', icon: '💻' }
-        ].map(p => (
-          <button
-            key={p.id}
-            type="button"
-            className={`p-nav-btn ${mobilePage === p.id ? 'active' : ''}`}
-            onClick={() => {
-              setMobilePage(p.id);
-              try { navigator.vibrate?.(8); } catch (_) {}
-            }}
-            role="tab"
-            aria-selected={mobilePage === p.id}
-          >
-            <span className="p-nav-icon">{p.icon}</span>
-            <span>{p.label}</span>
-            {mobilePage === p.id && <motion.span layoutId="personal-mobile-pill" className="p-nav-active-pill" transition={springs.ui} />}
+    <div className="personal-studio">
+      {!isPhone && (
+        <div className="personal-bento">
+          <article className="bento-intro">
+            <span className="bento-label">DESIGN & DEVELOPMENT</span>
+            <h1>Hey, I’m Tanxdai<span>.</span></h1>
+            <p>Bespoke web developer & AI engineer building clean, high-performance interfaces.</p>
+            <div className="intro-status-chips">
+              <span className="intro-chip available"><span className="pulse-dot" /> Available</span>
+              <span className="intro-chip">5+ Yrs</span>
+              <span className="intro-chip">100% Remote</span>
+            </div>
+          </article>
+
+          <motion.div className="bento-avatar" {...avatarTilt}>
+            <MemojiAvatar />
+          </motion.div>
+
+          <button className="bento-work" onClick={onWork}>
+            <span className="bento-card-top">Selected work <span><Icon name="arrowUpRight" /></span></span>
+            <div className="bento-previews">
+              {[projects[0], projects[1], projects[4]].map((project, index) => (
+                <img key={project.name} src={project.image} alt={project.name} style={{ '--order': index }} />
+              ))}
+            </div>
+            <span className="bento-footnote">Explore featured client builds</span>
           </button>
-        ))}
-      </div>
 
-      <div className="personal-bento">
-        <article className="bento-intro">
-          <span className="bento-label">DESIGN & DEVELOPMENT</span>
-          <h1>Hey, I’m Tanxdai<span>.</span></h1>
-          <p>Bespoke web developer & AI engineer building clean, high-performance interfaces.</p>
-        </article>
+          <article className="bento-terminal">
+            <TerminalWidget />
+          </article>
 
-        <motion.div className="bento-avatar" {...avatarTilt}>
-          <MemojiAvatar />
-        </motion.div>
-
-        <button className="bento-work" onClick={onWork}>
-          <span className="bento-card-top">Selected work <span><Icon name="arrowUpRight" /></span></span>
-          <div className="bento-previews">
-            {[projects[0], projects[1], projects[4]].map((project, index) => (
-              <img key={project.name} src={project.image} alt={project.name} style={{ '--order': index }} />
-            ))}
-          </div>
-          <span className="bento-footnote">Explore featured client builds</span>
-        </button>
-
-        <article className="bento-terminal">
-          <TerminalWidget />
-        </article>
-
-        <article className="bento-tools">
-          <div className="bento-card-top">
-            <span className="bento-label">TECH TOOLKIT</span>
-            <button
-              type="button"
-              className="phys-shake-btn"
-              onClick={() => toolsRef.current?.shake?.()}
-              aria-label="Shake Tech Toolkit"
-              title="Shake & toss blocks"
-            >
-              <span>↺ Shake</span>
-            </button>
-          </div>
-          <PhysicsPile ref={toolsRef} label="Interactive toolkit" variant="tile" items={playgroundItems} />
-        </article>
-
-        <article className="bento-gym">
-          <div className="bento-card-top">
-            <span className="bento-label">IRON & DISCIPLINE</span>
-            <button
-              type="button"
-              className="phys-shake-btn gym-shake-btn"
-              onClick={() => gymRef.current?.shake?.()}
-              aria-label="Shake Iron Gym"
-              title="Shake iron weights"
-            >
-              <span>↺ Shake</span>
-            </button>
-          </div>
-          <PhysicsPile ref={gymRef} label="Gym playground" variant="gym" items={gymItems} />
-        </article>
-
-        <article className="bento-stats">
-          <div className="bento-card-top">
-            <span className="bento-label">AT A GLANCE</span>
-            <div className="availability-badge">
-              <span className="pulse-dot" />
-              <span>Available</span>
+          <article className="bento-tools">
+            <div className="bento-card-top">
+              <span className="bento-label">TECH TOOLKIT</span>
+              <button
+                type="button"
+                className="phys-shake-btn"
+                onClick={() => toolsRef.current?.shake?.()}
+                aria-label="Shake Tech Toolkit"
+                title="Shake & toss blocks"
+              >
+                <span>↺ Shake</span>
+              </button>
             </div>
-          </div>
-          <div className="stats-grid">
-            <div className="stat-item">
-              <b>5+</b>
-              <small>Years Building</small>
+            <PhysicsPile ref={toolsRef} label="Interactive toolkit" variant="tile" items={playgroundItems} />
+          </article>
+
+          <article className="bento-gym">
+            <div className="bento-card-top">
+              <span className="bento-label">IRON & DISCIPLINE</span>
+              <button
+                type="button"
+                className="phys-shake-btn gym-shake-btn"
+                onClick={() => gymRef.current?.shake?.()}
+                aria-label="Shake Iron Gym"
+                title="Shake iron weights"
+              >
+                <span>↺ Shake</span>
+              </button>
             </div>
-            <div className="stat-item">
-              <b>100%</b>
-              <small>Remote Worldwide</small>
+            <PhysicsPile ref={gymRef} label="Gym playground" variant="gym" items={gymItems} />
+          </article>
+
+          <article className="bento-stats">
+            <div className="bento-card-top">
+              <span className="bento-label">AT A GLANCE</span>
+              <div className="availability-badge">
+                <span className="pulse-dot" />
+                <span>Available</span>
+              </div>
             </div>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <b>5+</b>
+                <small>Years Building</small>
+              </div>
+              <div className="stat-item">
+                <b>100%</b>
+                <small>Remote Worldwide</small>
+              </div>
+            </div>
+            <SpotifyWidget />
+          </article>
+        </div>
+      )}
+
+      {isPhone && (
+        <div className="personal-phone-stack">
+          {/* 1. Profile compaction on top */}
+          <article className="phone-profile-compact">
+            <div className="phone-profile-info">
+              <h1>Hey, I’m Tanxdai<span>.</span></h1>
+              <p>Bespoke web developer & AI engineer building clean, high-performance interfaces.</p>
+              <div className="intro-status-chips">
+                <span className="intro-chip available"><span className="pulse-dot" /> Available</span>
+                <span className="intro-chip">5+ Yrs</span>
+                <span className="intro-chip">Remote</span>
+              </div>
+            </div>
+            <div className="phone-avatar-wrap">
+              <MemojiAvatar />
+            </div>
+          </article>
+
+          {/* 2. Small vinyl to play sound */}
+          <div className="phone-vinyl-card">
+            <SpotifyWidget compact />
           </div>
-          <SpotifyWidget />
-        </article>
-      </div>
+
+          {/* 3. CRT Terminal under profile compaction */}
+          <article className="phone-terminal-card">
+            <TerminalWidget compact />
+          </article>
+
+          {/* 4. Iron discipline & code switchable physics playground */}
+          <article className="phone-physics-card">
+            <div className="phone-physics-bar">
+              <div className="physics-switch-pills" role="group" aria-label="Physics collection">
+                <button
+                  type="button"
+                  className={`phys-pill-btn ${activePhysics === 'tools' ? 'active' : ''}`}
+                  aria-pressed={activePhysics === 'tools'}
+                  onClick={() => setActivePhysics('tools')}
+                >
+                  <span>⚡ Code</span>
+                </button>
+                <button
+                  type="button"
+                  className={`phys-pill-btn ${activePhysics === 'gym' ? 'active' : ''}`}
+                  aria-pressed={activePhysics === 'gym'}
+                  onClick={() => setActivePhysics('gym')}
+                >
+                  <span>🏋️ Iron</span>
+                </button>
+              </div>
+              <button
+                type="button"
+                className="phone-shake-btn"
+                onClick={() => (activePhysics === 'tools' ? toolsRef : gymRef).current?.shake?.()}
+                aria-label="Shake physics playground"
+                title="Shake items"
+              >
+                <span>↺ Shake</span>
+              </button>
+            </div>
+            <div className="phone-physics-canvas">
+              <PhysicsPile
+                key={activePhysics}
+                ref={activePhysics === 'tools' ? toolsRef : gymRef}
+                label={activePhysics === 'tools' ? 'Interactive toolkit' : 'Gym playground'}
+                variant={activePhysics === 'tools' ? 'tile' : 'gym'}
+                items={activePhysics === 'tools' ? playgroundItems : gymItems}
+              />
+            </div>
+          </article>
+        </div>
+      )}
     </div>
   );
 }
@@ -372,8 +413,13 @@ export default function App() {
   useEffect(() => { const timer = setInterval(() => setTime(formatTime()), 60000); return () => clearInterval(timer); }, []);
   useEffect(trackSpotlight, []);
   const touchX = useRef(null);
-  const handleTouchStart = e => { touchX.current = e.touches[0].clientX; };
+  const handleTouchStart = e => {
+    touchX.current = null;
+    if (e.target.closest('.studio-physics, .phys-field') || e.touches.length !== 1) return;
+    touchX.current = e.touches[0].clientX;
+  };
   const handleTouchEnd = e => {
+    if (e.target.closest('.studio-physics, .phys-field')) { touchX.current = null; return; }
     if (touchX.current === null) return;
     const diff = touchX.current - e.changedTouches[0].clientX;
     const tabs = ['work', 'services', 'personal'];
@@ -384,7 +430,7 @@ export default function App() {
   };
   return <><div className="ambient" aria-hidden="true" />
     <header><a href="/" className="wordmark">tanxdai<span aria-hidden="true">®</span></a><StatusCapsule time={time} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></header>
-    <div className="workspace-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : Math.max(0, Math.min(tabs.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1))); if (next === index) return; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { handleTabChange(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
+    <div className="workspace-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onTouchCancel={() => { touchX.current = null; }}><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : Math.max(0, Math.min(tabs.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1))); if (next === index) return; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { handleTabChange(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
     <main>
       <ErrorBoundary resetKey={tab}>
         <section id="work-panel" role="tabpanel" aria-labelledby="work-tab" hidden={tab !== 'work'} aria-label="Selected work"><ProjectDeck enabled={tab === 'work'} /></section>

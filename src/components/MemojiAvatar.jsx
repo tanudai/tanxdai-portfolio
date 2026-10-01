@@ -208,7 +208,7 @@ export default function MemojiAvatar() {
       </g>
     </svg>
   </button>
-  <span className="avatar-hint">{hintText}</span>
+  <span className="avatar-hint" data-decorative="true">{hintText}</span>
 </div>
   );
 }
