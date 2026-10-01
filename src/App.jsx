@@ -10,6 +10,8 @@ import PhysicsPile from './components/PhysicsPile.jsx';
 import MemojiAvatar from './components/MemojiAvatar.jsx';
 import { BorderTrail, TextReveal, trackSpotlight, useMagnetic, useTilt } from './components/motion-kit.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
+import { PlateIcon, DumbbellIcon, KettlebellIcon, ShakerIcon, WaterIcon, StrapsIcon } from './components/GymIcons.jsx';
+import TerminalWidget from './components/TerminalWidget.jsx';
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 
@@ -185,13 +187,12 @@ function Personal({ onWork, onServices, onContact }) {
   ];
 
   const gymItems = [
-    { key: 'plate', node: <><b>20</b><small>KG Plate</small></> },
-    { key: 'db', node: <><b>DB</b><small>Dumbbell</small></> },
-    { key: 'pr', node: <><b>PR</b><small>Heavy</small></> },
-    { key: 'kb', node: <><b>KB</b><small>Kettlebell</small></> },
-    { key: 'h2o', node: <><b>H₂O</b><small>Hydrate</small></> },
-    { key: 'protein', node: <><b>Pro</b><small>Fuel</small></> },
-    { key: 'sleep', node: <><b>8h</b><small>Recovery</small></> },
+    { key: 'plate', node: <><PlateIcon /><small>20KG Plate</small></> },
+    { key: 'db', node: <><DumbbellIcon /><small>Dumbbell</small></> },
+    { key: 'kb', node: <><KettlebellIcon /><small>Kettlebell</small></> },
+    { key: 'shaker', node: <><ShakerIcon /><small>Protein</small></> },
+    { key: 'water', node: <><WaterIcon /><small>Hydration</small></> },
+    { key: 'straps', node: <><StrapsIcon /><small>Heavy Grip</small></> },
   ];
 
   return <div className="personal-bento">
@@ -216,22 +217,8 @@ function Personal({ onWork, onServices, onContact }) {
       <span className="bento-footnote">Explore featured client builds</span>
     </button>
 
-    <article className="bento-fuel">
-      <div className="bento-card-top">
-        <span className="bento-label">OFFLINE FUEL & FOCUS</span>
-        <div className="eq-container" aria-hidden="true">
-          <span className="eq-bar" />
-          <span className="eq-bar" />
-          <span className="eq-bar" />
-          <span className="eq-bar" />
-        </div>
-      </div>
-      <div className="fuel-content">
-        <div className="fuel-pill"><span>☕</span><b>Espresso</b><small>Single Origin</small></div>
-        <div className="fuel-pill"><span>🎧</span><b>Focus Beats</b><small>Synth & Lo-Fi</small></div>
-        <div className="fuel-pill"><span>⌨️</span><b>Custom 65%</b><small>Linear Thock</small></div>
-        <div className="fuel-pill"><span>📖</span><b>Systems & Sci-Fi</b><small>Architecture</small></div>
-      </div>
+    <article className="bento-terminal">
+      <TerminalWidget />
     </article>
 
     <article className="bento-tools">

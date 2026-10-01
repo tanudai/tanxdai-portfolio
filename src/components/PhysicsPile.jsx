@@ -32,23 +32,24 @@ export default function PhysicsPile({ items, variant = 'chip', label }) {
       dispose();
       dispose = () => {};
       if (width < 40 || height < 40) return;
-      import('matter-js').then(({ default: Matter }) => { if (alive && key === next) dispose = start(Matter, root, nodes.current, reduced, label); }).catch(() => {});
+      import('matter-js').then(({ default: Matter }) => { if (alive && key === next) dispose = start(Matter, root, nodes.current, reduced, label, variant); }).catch(() => {});
     });
     observer.observe(root);
     return () => { alive = false; observer.disconnect(); dispose(); };
-  }, [reduced, label]);
+  }, [reduced, label, variant]);
 
   return <div ref={field} className="phys-field" role="group" aria-label={`${label}. ${reduced ? '' : 'Drag or tap the blocks to play.'}`}>
     {items.map((item, i) => <button key={item.key} ref={el => { nodes.current[i] = el; }} type="button" className={`phys-block phys-${variant}`} tabIndex={reduced ? -1 : 0} data-i={i}>{item.node}</button>)}
   </div>;
 }
 
-function start(Matter, root, els, reduced, label) {
+function start(Matter, root, els, reduced, label, variant = 'tile') {
   const { Engine, Bodies, Body, Composite, Constraint, Sleeping } = Matter;
+  const isGym = variant === 'gym';
   const { width: W, height: H } = root.getBoundingClientRect();
   const rand = seeded([...label].reduce((a, c) => a * 31 + c.charCodeAt(0), 7));
   const engine = Engine.create({ enableSleeping: true, positionIterations: 8, velocityIterations: 6 });
-  engine.gravity.y = 1.1;
+  engine.gravity.y = isGym ? 1.38 : 1.05;
 
   // Keep as many blocks as fit comfortably (list order is priority order): within the area budget, and within the rows the height allows.
   let area = 0, rowWidth = 0, tallest = 0, shown = 0;
@@ -73,7 +74,15 @@ function start(Matter, root, els, reduced, label) {
     y -= h * 1.15;
     const round = validEls[i]?.classList?.contains('phys-chip') ? h / 2 : 12;
     const x = Math.min(W - w / 2, Math.max(w / 2, W * (((i % lanes) + 0.5) / lanes) + (rand() - 0.5) * 24)); // spread across lanes, then pile on top
-    const body = Bodies.rectangle(x, y, w, h, { chamfer: { radius: Math.min(round, h / 2) }, angle: (rand() - 0.5) * 1.1, restitution: 0.22, friction: 0.5, frictionAir: 0.012, density: 0.002, slop: 0.02 });
+    const body = Bodies.rectangle(x, y, w, h, {
+      chamfer: { radius: Math.min(round, h / 2) },
+      angle: (rand() - 0.5) * 1.1,
+      restitution: isGym ? 0.1 : 0.32,
+      friction: isGym ? 0.65 : 0.45,
+      frictionAir: isGym ? 0.018 : 0.012,
+      density: isGym ? 0.007 : 0.002,
+      slop: 0.02
+    });
     bodies.push(body);
   }
   Composite.add(engine.world, bodies);
@@ -117,8 +126,10 @@ function start(Matter, root, els, reduced, label) {
   const hop = body => {
     if (!active) return;
     wake(body);
-    Body.setVelocity(body, { x: (rand() - 0.5) * 6, y: -(6.5 + rand() * 2) });
-    Body.setAngularVelocity(body, (rand() - 0.5) * 0.3);
+    const hopY = isGym ? -(4.8 + rand() * 1.6) : -(6.5 + rand() * 2);
+    const hopX = isGym ? (rand() - 0.5) * 4 : (rand() - 0.5) * 6;
+    Body.setVelocity(body, { x: hopX, y: hopY });
+    Body.setAngularVelocity(body, (rand() - 0.5) * (isGym ? 0.2 : 0.35));
   };
 
   const local = e => { const r = root.getBoundingClientRect(); return { x: Math.min(W, Math.max(0, e.clientX - r.left)), y: Math.min(H, Math.max(0, e.clientY - r.top)) }; };
