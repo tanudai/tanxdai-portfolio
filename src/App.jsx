@@ -154,7 +154,7 @@ function ProjectDeck({ enabled }) {
         {projects.map((project, i) => <ProjectCard key={project.name} project={project} i={i} index={index} position={position} y={y} step={step} height={height} />)}
       </motion.div>
     </div>
-    <div className="deck-controls" style={{ position: 'absolute', right: '30px', top: '50%', transform: 'translateY(-50%)', flexDirection: 'column', padding: 0, gap: '15px', zIndex: 50, pointerEvents: 'auto' }}>
+    <div className="deck-controls" style={{ display: 'flex', justifyContent: 'flex-end', gap: '20px', padding: '20px 0', marginTop: '10px' }}>
       <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(selected.current - 1)} aria-label="Previous project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
       <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(selected.current + 1)} aria-label="Next project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
     </div>
