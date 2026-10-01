@@ -32,7 +32,7 @@ export const services = [
 
 import { useMagnetic, useTilt } from './components/motion-kit.jsx';
 
-function ServiceTile({ service, i, hovered, setHovered, setSelected, opener, loadFilm, reducedMotion }) {
+function ServiceTile({ service, i, hovered, setHovered, setSelected, opener, loadFilm, reducedMotion, style }) {
   const tilt = useTilt(10);
   const magnetic = useMagnetic(0.3, 12);
 
@@ -51,7 +51,7 @@ function ServiceTile({ service, i, hovered, setHovered, setSelected, opener, loa
     layoutId={`service-${service[1]}`} 
     whileHover={reducedMotion ? undefined : { y: -4, scale: 1.008 }} 
     whileTap={{ scale: 0.98 }} 
-    style={{ borderRadius: 16, ...tilt.style }} 
+    style={{ borderRadius: 16, display: 'flex', flexDirection: 'column', textAlign: 'left', ...tilt.style, ...style }} 
     onPointerMove={handlePointerMove}
     onPointerLeave={handlePointerLeave}
     transition={spring.sheet} 
@@ -60,7 +60,7 @@ function ServiceTile({ service, i, hovered, setHovered, setSelected, opener, loa
       <ServiceArt id={service[1]} active={hovered === service[1]} delay={0.1 + i * 0.07} />
       <motion.span className="service-open" {...magnetic} onPointerDown={e => e.stopPropagation()}><Icon name="arrowUpRight" /></motion.span>
     </span>
-    <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span></span><h2>{service[2]}</h2><p>{service[3]}</p><span className="service-flow">{flowSteps(service[1]).map((label, n) => <span key={label}>{n > 0 && <Icon name="arrowRight" />}{label}</span>)}</span>
+    <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span></span><h2>{service[2]}</h2><p>{service[3]}</p><span className="service-flow" style={{ marginTop: 'auto', paddingTop: '14px', width: '100%', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>{flowSteps(service[1]).map((label, n) => <span key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{n > 0 && <Icon name="arrowRight" />}{label}</span>)}</span>
   </motion.button>;
 }
 
@@ -148,16 +148,17 @@ export default function Services({ onCall, initialFilter = 'All' }) {
         <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goToPage(page + 1)} disabled={page === pages - 1} aria-label="Next services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
       </div>
     </div>
-    <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+    <div style={{ position: 'relative', flex: 1, minHeight: 0, paddingBottom: '20px' }}>
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div key={`${filter}-${page}`} custom={direction} className="service-grid"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gridTemplateRows: 'repeat(2, minmax(200px, 350px))', alignContent: 'center', justifyItems: 'stretch', alignItems: 'stretch', height: '100%', position: 'absolute', inset: '0 0 20px 0' }}
           variants={{
             from: dir => ({ opacity: 0, y: dir * 50 }),
             shown: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] } },
             gone: dir => ({ opacity: 0, y: dir * -50, transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } })
           }}
           initial={reducedMotion ? false : 'from'} animate="shown" exit={reducedMotion ? undefined : 'gone'}>
-          {filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} />)}
+          {filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} style={{ width: '100%', height: '100%' }} />)}
         </motion.div>
       </AnimatePresence>
     </div>
