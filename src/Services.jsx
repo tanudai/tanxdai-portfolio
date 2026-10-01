@@ -40,6 +40,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   const [hovered, setHovered] = useState(null);
   const dialog = useRef(null);
   const opener = useRef(null);
+  const touchX = useRef(null);
   useEffect(() => {
     const media = matchMedia('(max-width: 700px), (max-height: 650px)');
     const update = () => { setCompact(media.matches); setShortPhone(innerWidth <= 700 && innerHeight < 740); setPage(0); };
@@ -49,6 +50,14 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   const filtered = services.filter(service => filter === 'All' || service[0] === filter);
   const perPage = shortPhone ? 2 : compact ? 4 : 6;
   const pages = Math.ceil(filtered.length / perPage);
+  const handleTouchStart = e => { touchX.current = e.touches[0].clientX; };
+  const handleTouchEnd = e => {
+    if (touchX.current === null) return;
+    const diff = touchX.current - e.changedTouches[0].clientX;
+    if (diff > 50 && page < pages - 1) setPage(p => p + 1);
+    else if (diff < -50 && page > 0) setPage(p => p - 1);
+    touchX.current = null;
+  };
   // The card flies from its tile into the dialog and back: the dialog stays open until the return flight lands.
   const close = () => setSelected(null);
   useLayoutEffect(() => { if (selected && !dialog.current.open) dialog.current.showModal(); }, [selected]); // same frame as the click
@@ -56,7 +65,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`}>
     <div className="services-heading"><div><span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1></div><p>Development, AI integrations, and technical advice.</p></div>
     <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
-    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page}>{filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <motion.button key={service[1]} className="service-tile spotlight" onHoverStart={() => { setHovered(service[1]); loadFilm(); }} onHoverEnd={() => setHovered(null)} onFocus={() => { setHovered(service[1]); loadFilm(); }} onBlur={() => setHovered(null)} layoutId={`service-${service[1]}`} whileHover={reducedMotion ? undefined : { y: -4, rotate: -0.35, scale: 1.008 }} whileTap={{ scale: 0.98 }} style={{ borderRadius: 16 }} transition={spring.sheet} onClick={event => { opener.current = event.currentTarget; setSelected(service); }}>
+    <motion.div key={`${filter}-${page}`} className="service-grid" initial={reducedMotion ? false : { opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={spring.page} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>{filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <motion.button key={service[1]} className="service-tile spotlight" onHoverStart={() => { setHovered(service[1]); loadFilm(); }} onHoverEnd={() => setHovered(null)} onFocus={() => { setHovered(service[1]); loadFilm(); }} onBlur={() => setHovered(null)} layoutId={`service-${service[1]}`} whileHover={reducedMotion ? undefined : { y: -4, rotate: -0.35, scale: 1.008 }} whileTap={{ scale: 0.98 }} style={{ borderRadius: 16 }} transition={spring.sheet} onClick={event => { opener.current = event.currentTarget; setSelected(service); }}>
       <span className="service-stage"><ServiceArt id={service[1]} active={hovered === service[1]} delay={0.1 + i * 0.07} /><span className="service-open"><Icon name="arrowUpRight" /></span></span>
       <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span></span><h2>{service[2]}</h2><p>{service[3]}</p><span className="service-flow">{flowSteps(service[1]).map((label, n) => <span key={label}>{n > 0 && <Icon name="arrowRight" />}{label}</span>)}</span>
     </motion.button>)}</motion.div>
