@@ -67,22 +67,96 @@ function ServiceTile({ service, i, hovered, setHovered, setSelected, opener, loa
 export default function Services({ onCall, initialFilter = 'All' }) {
   const reducedMotion = useReducedMotion();
   const [filter, setFilter] = useState(initialFilter);
+  const [page, setPage] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [compact, setCompact] = useState(() => matchMedia('(max-width: 700px), (max-height: 650px)').matches);
+  const [shortPhone, setShortPhone] = useState(() => innerWidth <= 700 && innerHeight < 740);
   const [selected, setSelected] = useState(null);
   const [hovered, setHovered] = useState(null);
   const dialog = useRef(null);
   const opener = useRef(null);
   
+  useEffect(() => {
+    const media = matchMedia('(max-width: 700px), (max-height: 650px)');
+    const update = () => { setCompact(media.matches); setShortPhone(innerWidth <= 700 && innerHeight < 740); setPage(0); };
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  
   const filtered = services.filter(service => filter === 'All' || service[0] === filter);
+  const perPage = shortPhone ? 2 : compact ? 4 : 6;
+  const pages = Math.ceil(filtered.length / perPage);
+  
+  const goToPage = (newPage) => {
+    if (newPage < 0 || newPage >= pages) return;
+    setDirection(newPage > page ? 1 : -1);
+    setPage(newPage);
+  };
+  
+  const touchY = useRef(null);
+  const handleTouchStart = e => { touchY.current = e.touches[0].clientY; };
+  const handleTouchEnd = e => {
+    if (touchY.current === null) return;
+    const diff = touchY.current - e.changedTouches[0].clientY;
+    if (diff > 50) goToPage(page + 1);
+    else if (diff < -50) goToPage(page - 1);
+    touchY.current = null;
+  };
+  
+  const wheelState = useRef({ amount: 0, last: 0, lockedUntil: 0 });
+  const viewport = useRef(null);
+  useEffect(() => {
+    const element = viewport.current;
+    if (!element) return;
+    function onWheel(event) {
+      if (event.ctrlKey || Math.abs(event.deltaY) < Math.abs(event.deltaX) || document.querySelector('dialog[open]')) return;
+      event.preventDefault();
+      const now = performance.now();
+      const state = wheelState.current;
+      if (now - state.last > 140) state.amount = 0;
+      state.last = now;
+      if (now < state.lockedUntil) return;
+      state.amount += event.deltaY * (event.deltaMode === 1 ? 16 : 1);
+      if (Math.abs(state.amount) > 45) {
+        goToPage(page + (state.amount > 0 ? 1 : -1));
+        state.amount = 0;
+        state.lockedUntil = now + 600;
+      }
+    }
+    element.addEventListener('wheel', onWheel, { passive: false });
+    return () => element.removeEventListener('wheel', onWheel);
+  }, [page, pages]);
   
   // The card flies from its tile into the dialog and back: the dialog stays open until the return flight lands.
   const close = () => setSelected(null);
   useLayoutEffect(() => { if (selected && !dialog.current.open) dialog.current.showModal(); }, [selected]); // same frame as the click
   const landed = () => { dialog.current?.close(); opener.current?.focus(); };
   
-  return <div className="services-app">
+  return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`} ref={viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} tabIndex={0} style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
     <div className="services-heading"><div><span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1></div><p>Development, AI integrations, and technical advice.</p></div>
-    <div className="service-filters" aria-label="Filter services" style={{ position: 'sticky', top: 0, zIndex: 10, background: '#101010', paddingBottom: '10px' }}>{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => setFilter(group)}>{group}</button>)}</div>
-    <motion.div key={filter} className="service-grid" initial={reducedMotion ? false : { opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={spring.page} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>{filtered.map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} />)}</motion.div>
+    <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
+    <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+      <AnimatePresence mode="wait" custom={direction}>
+        <motion.div key={`${filter}-${page}`} custom={direction} className="service-grid"
+          variants={{
+            from: dir => ({ opacity: 0, y: dir * 50 }),
+            shown: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] } },
+            gone: dir => ({ opacity: 0, y: dir * -50, transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } })
+          }}
+          initial={reducedMotion ? false : 'from'} animate="shown" exit={reducedMotion ? undefined : 'gone'}>
+          {filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} />)}
+        </motion.div>
+      </AnimatePresence>
+    </div>
+    <div className="deck-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0 5px', marginTop: 'auto' }}>
+      <div className="deck-dots" aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {Array.from({ length: pages }).map((_, i) => <i key={i} className={i === page ? 'on' : ''} style={{ width: '6px', height: '6px', borderRadius: '50%', background: i === page ? '#b7efcf' : '#ffffff22' }} />)}
+      </div>
+      <div style={{ display: 'flex', gap: '15px' }}>
+        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goToPage(page - 1)} disabled={page === 0} aria-label="Previous services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goToPage(page + 1)} disabled={page === pages - 1} aria-label="Next services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
+      </div>
+    </div>
     <dialog ref={dialog} className="service-dialog" aria-label={selected ? selected[2] : 'Service'} onCancel={event => { event.preventDefault(); close(); }}>
       <AnimatePresence onExitComplete={landed}>
         {selected && <motion.div key="scrim" className="service-scrim" onClick={close} initial={{ opacity: 0 }}
