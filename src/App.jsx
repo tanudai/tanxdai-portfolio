@@ -10,7 +10,7 @@ import PhysicsPile from './components/PhysicsPile.jsx';
 import MemojiAvatar from './components/MemojiAvatar.jsx';
 import { BorderTrail, TextReveal, trackSpotlight, useMagnetic, useTilt } from './components/motion-kit.jsx';
 import ErrorBoundary from './components/ErrorBoundary.jsx';
-import { PlateIcon, DumbbellIcon, KettlebellIcon, ShakerIcon, WaterIcon, StrapsIcon } from './components/GymIcons.jsx';
+import { Plate20KG, HexDumbbell, Kettlebell24KG, OlympicClamp, ShakerBottle, SteelFlask, HeavyGripper, ChalkBlock } from './components/GymIcons.jsx';
 import TerminalWidget from './components/TerminalWidget.jsx';
 import SpotifyWidget from './components/SpotifyWidget.jsx';
 
@@ -191,12 +191,14 @@ function Personal({ onWork, onServices, onContact }) {
   ];
 
   const gymItems = [
-    { key: 'plate', node: <><PlateIcon /><small>20KG Plate</small></> },
-    { key: 'db', node: <><DumbbellIcon /><small>Dumbbell</small></> },
-    { key: 'kb', node: <><KettlebellIcon /><small>Kettlebell</small></> },
-    { key: 'shaker', node: <><ShakerIcon /><small>Protein</small></> },
-    { key: 'water', node: <><WaterIcon /><small>Hydration</small></> },
-    { key: 'straps', node: <><StrapsIcon /><small>Heavy Grip</small></> },
+    { key: 'plate', shape: 'circle', node: <Plate20KG /> },
+    { key: 'db', shape: 'dumbbell', node: <HexDumbbell /> },
+    { key: 'kb', shape: 'kettlebell', node: <Kettlebell24KG /> },
+    { key: 'clamp', shape: 'circle', node: <OlympicClamp /> },
+    { key: 'shaker', shape: 'rect', node: <ShakerBottle /> },
+    { key: 'flask', shape: 'rect', node: <SteelFlask /> },
+    { key: 'gripper', shape: 'rect', node: <HeavyGripper /> },
+    { key: 'chalk', shape: 'rect', node: <ChalkBlock /> },
   ];
 
   return <div className="personal-bento">

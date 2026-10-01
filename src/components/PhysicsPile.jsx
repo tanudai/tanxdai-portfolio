@@ -86,6 +86,7 @@ const PhysicsPile = forwardRef(function PhysicsPile({ items, variant = 'tile', l
           className={`phys-block phys-${variant}`}
           tabIndex={reduced ? -1 : 0}
           data-i={i}
+          data-shape={item.shape || 'rect'}
         >
           {item.node}
         </button>
@@ -111,12 +112,13 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     return [el.offsetWidth, el.offsetHeight];
   });
 
+  const fillLimit = isGym ? 0.78 : FILL;
   sizes.forEach(([w, h], i) => {
     area += (w + 4) * (h + 4);
     rowWidth += w + 6;
     tallest = Math.max(tallest, h);
     const rows = Math.ceil(rowWidth / (W * 0.9));
-    if ((area <= W * H * FILL && rows * tallest <= H) || i < 1) shown = i + 1;
+    if ((area <= W * H * fillLimit && rows * tallest <= H) || i < 1) shown = i + 1;
   });
   validEls.forEach((el, i) => { el.style.display = i < shown ? '' : 'none'; });
 
@@ -131,19 +133,63 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
   const lanes = Math.max(1, Math.floor(W / (sizes.slice(0, shown).reduce((a, [w]) => a + w, 0) / Math.max(1, shown) + 8)));
   let y = -10;
   for (let i = 0; i < shown; i++) {
+    const el = validEls[i];
     const [w, h] = sizes[i] || [40, 20];
     y -= h * 1.15;
-    const round = validEls[i]?.classList?.contains('phys-chip') ? h / 2 : 12;
+    const shape = el?.dataset?.shape || (el?.classList?.contains('phys-chip') ? 'chip' : 'rect');
     const x = Math.min(W - w / 2, Math.max(w / 2, W * (((i % lanes) + 0.5) / lanes) + (rand() - 0.5) * 24));
-    const body = Bodies.rectangle(x, y, w, h, {
-      chamfer: { radius: Math.min(round, h / 2) },
-      angle: (rand() - 0.5) * 1.1,
-      restitution: isGym ? 0.1 : 0.32,
-      friction: isGym ? 0.65 : 0.45,
-      frictionAir: isGym ? 0.018 : 0.012,
-      density: isGym ? 0.007 : 0.002,
-      slop: 0.02
-    });
+    
+    let body;
+    if (shape === 'circle') {
+      const radius = Math.min(w, h) / 2;
+      body = Bodies.circle(x, y, radius, {
+        restitution: isGym ? 0.22 : 0.32,
+        friction: isGym ? 0.55 : 0.45,
+        frictionAir: isGym ? 0.006 : 0.012,
+        density: isGym ? 0.009 : 0.002,
+        slop: 0.01
+      });
+    } else if (shape === 'kettlebell') {
+      const baseR = w * 0.42;
+      const base = Bodies.circle(x, y + h * 0.14, baseR, {
+        density: 0.012,
+        friction: 0.7,
+        restitution: 0.08
+      });
+      const handle = Bodies.rectangle(x, y - h * 0.28, w * 0.55, h * 0.36, {
+        chamfer: { radius: 6 },
+        density: 0.001,
+        friction: 0.5,
+        restitution: 0.08
+      });
+      body = Body.create({
+        parts: [base, handle],
+        restitution: 0.08,
+        friction: 0.7,
+        frictionAir: 0.016
+      });
+    } else if (shape === 'dumbbell') {
+      body = Bodies.rectangle(x, y, w, h, {
+        chamfer: { radius: 10 },
+        angle: (rand() - 0.5) * 0.8,
+        restitution: 0.1,
+        friction: 0.75,
+        frictionAir: 0.018,
+        density: 0.008,
+        slop: 0.02
+      });
+    } else {
+      const round = shape === 'chip' ? h / 2 : 10;
+      body = Bodies.rectangle(x, y, w, h, {
+        chamfer: { radius: Math.min(round, h / 2) },
+        angle: (rand() - 0.5) * 1.1,
+        restitution: isGym ? 0.12 : 0.32,
+        friction: isGym ? 0.65 : 0.45,
+        frictionAir: isGym ? 0.016 : 0.012,
+        density: isGym ? 0.007 : 0.002,
+        slop: 0.02
+      });
+    }
     bodies.push(body);
   }
   Composite.add(engine.world, bodies);
