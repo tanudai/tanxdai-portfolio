@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 
+const PLAYLIST_URL = 'https://music.youtube.com/playlist?list=RDCLAK5uy_mcd5hbKGTuwPRREfC4-0foufnfjx90hrg';
+const PLAYLIST_NAME = 'HIIT Workout';
+
 const TRACKS = [
   {
     title: 'Makeba',
@@ -185,7 +188,22 @@ export default function SpotifyWidget({ compact = false }) {
           <span className="mini-track-artist">{current.artist}</span>
         </div>
         <div className="mini-vinyl-subline">
-          <span className="mini-badge-genre">{loading ? 'LOADING AUDIO…' : isPlaying ? 'NOW PLAYING' : current.genre}</span>
+          <a
+            href={PLAYLIST_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mini-playlist-link"
+            title="Open HIIT Workout on YouTube Music"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="mini-yt-dot" aria-hidden="true" />
+            <span className="mini-pl-title">{loading ? 'LOADING…' : isPlaying ? 'PLAYING' : 'HIIT WORKOUT'}</span>
+            <span className="mini-pl-sub">· YT Music</span>
+            <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </a>
         </div>
       </div>
       <div className="mini-vinyl-actions">
@@ -357,44 +375,70 @@ export default function SpotifyWidget({ compact = false }) {
         </div>
       </div>
 
-      {/* Playlist Quick Pick Grid (Fit without horizontal scroll) */}
-      <div className="spotify-playlist" role="listbox" aria-label="Workout and focus tracks">
-        {TRACKS.slice(0, 4).map((t, idx) => {
-          const isCurrent = idx === trackIdx;
-          return (
-            <button
-              key={t.title}
-              type="button"
-              className={`spotify-track-chip ${isCurrent ? 'active' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                if (isCurrent) {
-                  handleTogglePlay(e);
-                } else {
-                  setTrackIdx(idx);
-                  setIsPlaying(true);
-                }
-              }}
-              role="option"
-              aria-selected={isCurrent}
-            >
-              <span className="track-chip-icon">
-                {isCurrent && isPlaying ? (
-                  <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="5" y="4" width="4" height="16" rx="1" />
-                    <rect x="15" y="4" width="4" height="16" rx="1" />
-                  </svg>
-                ) : (
-                  <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="6,4 20,12 6,20" />
-                  </svg>
-                )}
-              </span>
-              <span className="track-chip-name">{t.title}</span>
-              <span className="track-chip-artist">{t.artist.split('&')[0].trim()}</span>
-            </button>
-          );
-        })}
+      {/* Playlist Section: HIIT Workout on YouTube Music */}
+      <div className="spotify-playlist-section">
+        <div className="playlist-section-header">
+          <div className="playlist-badge">
+            <span className="playlist-badge-dot" />
+            <span className="playlist-badge-label">PLAYLIST</span>
+          </div>
+          <a
+            href={PLAYLIST_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="playlist-direct-link"
+            title="Open HIIT Workout playlist on YouTube Music"
+            aria-label="Open HIIT Workout playlist on YouTube Music"
+          >
+            <span className="playlist-link-name">{PLAYLIST_NAME}</span>
+            <span className="playlist-link-curator">· YouTube Music</span>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </a>
+        </div>
+
+        {/* Quick Pick Track Chips */}
+        <div className="spotify-playlist" role="listbox" aria-label="HIIT Workout tracks">
+          {TRACKS.slice(0, 4).map((t, idx) => {
+            const isCurrent = idx === trackIdx;
+            return (
+              <button
+                key={t.title}
+                type="button"
+                className={`spotify-track-chip ${isCurrent ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isCurrent) {
+                    handleTogglePlay(e);
+                  } else {
+                    setTrackIdx(idx);
+                    setIsPlaying(true);
+                  }
+                }}
+                role="option"
+                aria-selected={isCurrent}
+                title={`Play ${t.title} by ${t.artist}`}
+              >
+                <span className="track-chip-icon">
+                  {isCurrent && isPlaying ? (
+                    <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <rect x="5" y="4" width="4" height="16" rx="1" />
+                      <rect x="15" y="4" width="4" height="16" rx="1" />
+                    </svg>
+                  ) : (
+                    <svg width="7" height="7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <polygon points="6,4 20,12 6,20" />
+                    </svg>
+                  )}
+                </span>
+                <span className="track-chip-name">{t.title}</span>
+                <span className="track-chip-artist">{t.artist.split('&')[0].trim()}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

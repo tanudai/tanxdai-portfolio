@@ -8,7 +8,7 @@ const COMMANDS = {
   motto: 'Precision in code. Discipline in iron. Zero compromise.',
   about: 'I build bespoke web interfaces and AI-powered products.\n5+ years of building. Working remotely, worldwide.\nEqual parts design detail and engineering.',
   offclock: 'Away from the editor: iron, discipline, and a good soundtrack.\nThe gym has progressive overload. Code has progressive enhancement.',
-  music: 'Current setup: a little vinyl, a little volume, a lot of focus.\nTap the record below for a preview.\nNo terminal command can improve your music taste. Yet.',
+  music: 'Current setup: a little vinyl, a little volume, a lot of focus.\nPlaylist: HIIT Workout on YouTube Music.\nTap the record or track chips below to spin preview audio.',
   debug: 'Checking for bugs…\nFound one between the keyboard and the chair.\nPatch: stand up, stretch, try again.',
   sudo: 'Permission denied.\nYou can have admin access to the playlist, not my life choices.',
   ping: 'Pinging motivation…\nRequest timed out.\nDiscipline is handling the request instead.',

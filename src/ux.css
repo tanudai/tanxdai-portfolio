@@ -79,6 +79,11 @@
 .mini-track-artist{font-size:12px;color:#8ba091;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mini-vinyl-subline{display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .mini-badge-genre{font-size:12px;color:#b7efcf;font-weight:600;letter-spacing:0.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini-playlist-link{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:500;color:#8fa093;text-decoration:none;transition:color .15s;flex-shrink:0}
+.mini-playlist-link:hover{color:#b7efcf;text-decoration:underline}
+.mini-yt-dot{width:4px;height:4px;border-radius:50%;background:#ff4e4e;box-shadow:0 0 4px rgba(255,78,78,0.6);flex-shrink:0}
+.mini-pl-title{color:#d4e2d8;font-weight:600}
+.mini-pl-sub{color:#7a8e80}
 .mini-vinyl-actions{display:flex;align-items:center;gap:4px;flex-shrink:0}
 .mini-ctrl-btn{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:50%;color:#c4d4c8;cursor:pointer;padding:0;transition:background .18s var(--ease-enter),color .18s var(--ease-enter)}
 .mini-ctrl-btn:hover{background:rgba(255,255,255,0.12);color:#fff}

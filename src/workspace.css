@@ -37,7 +37,7 @@ button:not(:disabled){transition:background .18s,box-shadow .18s}button:not(:dis
 /* Personal: a compact, reference-inspired bento composition. */
 #personal-panel{display:flex;align-items:center;justify-content:center;padding:20px 0;min-height:0;height:100%}
 .personal-container{display:flex;flex-direction:column;width:100%;height:100%;align-items:center;justify-content:center;min-height:0}
-.personal-mobile-header,.personal-mobile-nav,.personal-mobile-dots,.intro-status-chips,.phys-sub-nav,.spotify-playlist{display:none}
+.personal-mobile-header,.personal-mobile-nav,.personal-mobile-dots,.intro-status-chips,.phys-sub-nav{display:none}
 .personal-bento{width:min(1360px,100%);height:min(760px,100%);max-height:100%;margin:auto;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:1.15fr 1.55fr 1.65fr;gap:12px;color:#eeefed}
 .personal-bento>article,.personal-bento>button,.bento-avatar{min-height:0;min-width:0;background:linear-gradient(145deg,#1c231f,#131815);border:1px solid rgba(255,255,255,0.08);border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 10px 28px rgba(0,0,0,0.35);text-align:left;overflow:hidden;transition:border-color .22s ease,box-shadow .22s ease,transform .22s ease}
 .personal-bento>article:hover,.personal-bento>button:hover,.bento-avatar:hover{border-color:rgba(183,239,207,0.32);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1),0 14px 34px rgba(0,0,0,0.45);transform:translateY(-2px)}
@@ -114,6 +114,27 @@ button:not(:disabled){transition:background .18s,box-shadow .18s}button:not(:dis
 .spotify-btn:active{transform:scale(0.92)}
 .spotify-btn.play-btn{background:rgba(29,185,84,0.2);border-color:rgba(29,185,84,0.5);color:#1db954}
 .spotify-btn.play-btn:hover{background:#1db954;color:#0b110e}
+.spotify-playlist-section{display:flex;flex-direction:column;gap:5px;margin-top:2px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06)}
+.playlist-section-header{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.playlist-badge{display:inline-flex;align-items:center;gap:4px}
+.playlist-badge-dot{width:5px;height:5px;border-radius:50%;background:#ff4e4e;box-shadow:0 0 5px rgba(255,78,78,0.6)}
+.playlist-badge-label{font-size:8.5px;font-weight:600;letter-spacing:0.8px;color:#9eb0a2;text-transform:uppercase}
+.playlist-direct-link{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;color:#d4e2d8;text-decoration:none;transition:color .15s}
+.playlist-direct-link:hover{color:#b7efcf;text-decoration:underline}
+.playlist-link-name{font-weight:600;color:#e5f5ec}
+.playlist-link-curator{color:#8fa093}
+.spotify-playlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+.spotify-track-chip{font-family:inherit;display:flex;align-items:center;gap:4px;padding:3px 6px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#a2b2a6;font-size:9.5px;cursor:pointer;text-align:left;overflow:hidden;white-space:nowrap;transition:all .18s ease}
+.spotify-track-chip:hover{background:rgba(183,239,207,0.08);border-color:rgba(183,239,207,0.3);color:#e5f5ec}
+.spotify-track-chip.active{background:rgba(29,185,84,0.15);border-color:#1db954;color:#fff}
+.track-chip-icon{display:inline-flex;align-items:center;justify-content:center;width:9px;flex-shrink:0;color:#1db954}
+.track-chip-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;flex:1}
+.track-chip-artist{font-size:8px;color:#7e9183;overflow:hidden;text-overflow:ellipsis}
+.spotify-track-chip.active .track-chip-artist{color:#b7efcf}
+@media(max-height:740px) and (min-width:601px){
+  .spotify-playlist{display:none}
+  .spotify-playlist-section{padding-top:4px;gap:2px}
+}
 @media(max-width:600px){
   #personal-panel{padding:6px 10px 4px!important;display:flex!important;flex-direction:column!important;height:100%!important;max-height:100%!important;min-height:0!important;overflow:hidden!important}
   .spotify-playlist{display:none!important}
