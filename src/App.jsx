@@ -429,6 +429,22 @@ export default function App() {
   }, [tab]);
   useEffect(() => { const timer = setInterval(() => setTime(formatTime()), 60000); return () => clearInterval(timer); }, []);
   useEffect(trackSpotlight, []);
+  useEffect(() => {
+    const lockPortrait = () => {
+      try {
+        if (typeof window !== 'undefined' && window.screen?.orientation?.lock) {
+          window.screen.orientation.lock('portrait').catch(() => {});
+        }
+      } catch (_) {}
+    };
+    lockPortrait();
+    window.addEventListener('click', lockPortrait, { once: true });
+    window.addEventListener('touchend', lockPortrait, { once: true });
+    return () => {
+      window.removeEventListener('click', lockPortrait);
+      window.removeEventListener('touchend', lockPortrait);
+    };
+  }, []);
   const touchX = useRef(null);
   const handleTouchStart = e => {
     touchX.current = null;

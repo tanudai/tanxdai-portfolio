@@ -375,35 +375,28 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     const radG = gamma * degToRad;
     const radB = beta * degToRad;
 
-    // Device physical tilt components
-    const devX = Math.sin(radG);
-    const devY = Math.sin(radB);
+    // Direct device tilt components in the portrait frame:
+    // gamma: [-90, 90] — tilting right (or turning clockwise) is positive (+X)
+    // beta: [-180, 180] — upright reading posture is positive (+Y), upside down is negative (-Y)
+    const gx = Math.sin(radG);
+    const gy = Math.sin(radB);
 
-    // Screen orientation angle (0 for portrait, 90 / 270 for landscape)
-    const screenAngle = (window.screen?.orientation?.angle ?? (window.orientation || 0)) * degToRad;
-    const cosA = Math.cos(screenAngle);
-    const sinA = Math.sin(screenAngle);
-
-    // Screen-space 2D gravity coordinates
-    const sx = devX * cosA - devY * sinA;
-    const sy = devX * sinA + devY * cosA;
-
-    const mag = Math.hypot(sx, sy);
+    const mag = Math.hypot(gx, gy);
     let targetGx, targetGy;
 
-    if (mag < 0.12) {
-      // Flat or near-flat resting posture: standard downward gravity
+    if (mag < 0.1) {
+      // Flat or resting posture: default downward gravity
       targetGx = 0;
       targetGy = baseGy;
     } else {
       // Dynamic tilt vector scaled proportionally to tilt angle
-      const strength = Math.min(1.4, mag * 1.45) * baseGy;
-      targetGx = (sx / mag) * strength;
-      targetGy = (sy / mag) * strength;
+      const strength = Math.min(1.45, mag * 1.5) * baseGy;
+      targetGx = (gx / mag) * strength;
+      targetGy = (gy / mag) * strength;
     }
 
     // Wake resting bodies when orientation vector shifts
-    if (Math.hypot(targetGx - lastGx, targetGy - lastGy) > 0.05) {
+    if (Math.hypot(targetGx - lastGx, targetGy - lastGy) > 0.04) {
       lastGx = targetGx;
       lastGy = targetGy;
       engine.gravity.x = targetGx;
@@ -422,7 +415,6 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
     window.addEventListener('deviceorientation', onOrientation, { passive: true });
   };
 
-  let pendingGesture = false;
   const requestGyroPermission = () => {
     if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
       DeviceOrientationEvent.requestPermission()
@@ -432,16 +424,38 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
           }
         })
         .catch(() => {});
-    }
-  };
-
-  if (typeof DeviceOrientationEvent !== 'undefined') {
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-      pendingGesture = true;
-      window.addEventListener('pointerdown', requestGyroPermission, { once: true, passive: true });
+    } else if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(state => {
+          if (state === 'granted') {
+            bindOrientation();
+          }
+        })
+        .catch(() => {});
     } else {
       bindOrientation();
     }
+  };
+
+  let cleanupGesture = () => {};
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    // iOS 13+ requires user gesture via click/touchend
+    const onUserGesture = () => {
+      requestGyroPermission();
+    };
+    window.addEventListener('click', onUserGesture, { capture: true, once: true });
+    window.addEventListener('touchend', onUserGesture, { capture: true, once: true });
+    root.addEventListener('click', onUserGesture, { capture: true, once: true });
+    root.addEventListener('touchend', onUserGesture, { capture: true, once: true });
+    cleanupGesture = () => {
+      window.removeEventListener('click', onUserGesture, { capture: true });
+      window.removeEventListener('touchend', onUserGesture, { capture: true });
+      root.removeEventListener('click', onUserGesture, { capture: true });
+      root.removeEventListener('touchend', onUserGesture, { capture: true });
+    };
+  } else {
+    // Android and devices without permission gate
+    bindOrientation();
   }
 
   root.addEventListener('pointerdown', down);
@@ -459,9 +473,7 @@ function start(Matter, root, els, reduced, label, variant = 'tile') {
       if (boundOrientation) {
         window.removeEventListener('deviceorientation', onOrientation);
       }
-      if (pendingGesture) {
-        window.removeEventListener('pointerdown', requestGyroPermission);
-      }
+      cleanupGesture();
       if (drag) {
         try { drag.el?.releasePointerCapture?.(drag.id); } catch (_) {}
         drag.el?.classList?.remove('is-dragging');
