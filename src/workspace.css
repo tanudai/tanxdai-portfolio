@@ -65,6 +65,8 @@ button:not(:disabled){transition:background .18s,box-shadow .18s}button:not(:dis
 .phys-shake-btn.gym-shake-btn:hover{background:rgba(255,170,113,0.22);border-color:#ffaa71;color:#fff}
 .thud-pulse{animation:visual-thud 0.14s ease-out}
 @keyframes visual-thud{0%{transform:translateY(0)}35%{transform:translateY(2.5px) scale(0.996)}100%{transform:translateY(0)}}
+.gym-head-title{display:flex;flex-direction:column;gap:2px}
+.gym-pr-tag{font-size:12px;color:#d4a98a;letter-spacing:0.2px;font-weight:500;line-height:1.2}
 .bento-gym{grid-column:span 4;padding:20px;display:flex;flex-direction:column}.bento-gym .bento-card-top{margin-bottom:8px}.bento-gym .bento-label{color:#e0a078}.bento-gym .drag-hint{color:#ba805e}.bento-gym:hover{border-color:rgba(255,170,113,0.38)!important}
 .phys-gym{background:none!important;border:none!important;box-shadow:none!important;padding:0!important;margin:0!important;cursor:grab;user-select:none;display:inline-flex;align-items:center;justify-content:center;overflow:visible!important;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.65));transition:filter .18s ease}
 .phys-gym:active,.phys-gym.is-dragging{cursor:grabbing;filter:drop-shadow(0 12px 20px rgba(0,0,0,0.85)) brightness(1.1)}

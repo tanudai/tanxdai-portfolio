@@ -287,7 +287,10 @@ function Personal({ onWork, onServices, onContact }) {
 
           <article className="bento-gym" data-decorative="true">
             <div className="bento-card-top">
-              <span className="bento-label">IRON & DISCIPLINE</span>
+              <div className="gym-head-title">
+                <span className="bento-label">IRON & DISCIPLINE</span>
+                <span className="gym-pr-tag" data-decorative="true">PRs: DL 240kg · SQ 175kg · BP 140kg</span>
+              </div>
               <button
                 type="button"
                 className="phys-shake-btn gym-shake-btn"
@@ -374,6 +377,9 @@ function Personal({ onWork, onServices, onContact }) {
                   <span>🏋️ Iron</span>
                 </button>
               </div>
+              {activePhysics === 'gym' && (
+                <span className="phone-gym-prs" data-decorative="true">DL 240 · SQ 175 · BP 140</span>
+              )}
               <button
                 type="button"
                 className="phone-shake-btn"

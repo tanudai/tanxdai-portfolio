@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 const COMMANDS = {
   whoami: 'Tanxdai · Full-Stack Engineer & AI Craftsman.\nPhilosophy: Fast interfaces, intelligent agents, zero fluff.\nMission: Building bespoke web products for select clients.',
   stack: 'Frontend: React 19 · TypeScript · Next.js · Vite · Motion\nAI & ML: Gemini Live API · PyTorch · Agents · Vector DBs\nBackend: Python · Node.js · Fastify · Docker · PostgreSQL · Redis',
-  gym: 'Discipline: Consistency over motivation. 5-day hyper-split.\nIron PRs: Deadlift 200kg · Squat 160kg · Bench 120kg\nRecovery: Sleep 8h · Clean fuel · Cold focus',
+  gym: 'Discipline: Consistency over motivation. 5-day hyper-split.\nIron PRs: Deadlift 240kg · Squat 175kg · Bench 140kg\nRecovery: Sleep 8h · Clean fuel · Cold focus',
   specs: 'Host: Apple Silicon M3 Max · 64GB Unified Memory\nKernel: Darwin 24.2.0 arm64 · Status: Online & Available\nLatency: 12ms · Uptime: 99.98% over 5+ production years',
   motto: 'Precision in code. Discipline in iron. Zero compromise.',
   about: 'I build bespoke web interfaces and AI-powered products.\n5+ years of building. Working remotely, worldwide.\nEqual parts design detail and engineering.',
