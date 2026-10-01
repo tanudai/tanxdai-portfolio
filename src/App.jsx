@@ -222,28 +222,28 @@ export default function App() {
     <header><a href="/" className="wordmark">tanxdai<span aria-hidden="true">®</span></a><StatusCapsule time={time} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></header>
     <div className="workspace-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { handleTabChange(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
     <main style={{ position: 'relative', overflowX: 'hidden', overflowY: tab === 'personal' ? 'auto' : 'hidden' }}>
-      <AnimatePresence initial={false} custom={tabDirection}>
+      <AnimatePresence initial={false} custom={tabDirection} mode="popLayout">
         {tab === 'work' && (
           <motion.div key="work" custom={tabDirection} className="sliding-tab"
-            variants={{ enter: dir => ({ x: dir > 0 ? '100%' : '-100%' }), center: { x: 0 }, exit: dir => ({ x: dir < 0 ? '100%' : '-100%' }) }}
+            variants={{ enter: dir => ({ x: dir > 0 ? '100%' : '-100%' }), center: { x: 0 }, exit: dir => ({ x: dir < 0 ? '100%' : '-100%', zIndex: -1 }) }}
             initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-            style={{ position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, display: 'flex', flexDirection: 'column' }}>
+            style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <section id="work-panel" role="tabpanel" aria-labelledby="work-tab" aria-label="Selected work" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><ProjectDeck enabled={true} /></section>
           </motion.div>
         )}
         {tab === 'services' && (
           <motion.div key="services" custom={tabDirection} className="sliding-tab"
-            variants={{ enter: dir => ({ x: dir > 0 ? '100%' : '-100%' }), center: { x: 0 }, exit: dir => ({ x: dir < 0 ? '100%' : '-100%' }) }}
+            variants={{ enter: dir => ({ x: dir > 0 ? '100%' : '-100%' }), center: { x: 0 }, exit: dir => ({ x: dir < 0 ? '100%' : '-100%', zIndex: -1 }) }}
             initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-            style={{ position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, display: 'flex', flexDirection: 'column' }}>
+            style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <section id="services-panel" role="tabpanel" aria-labelledby="services-tab" aria-label="Services" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} /></section>
           </motion.div>
         )}
         {tab === 'personal' && (
           <motion.div key="personal" custom={tabDirection} className="sliding-tab"
-            variants={{ enter: dir => ({ x: dir > 0 ? '100%' : '-100%' }), center: { x: 0 }, exit: dir => ({ x: dir < 0 ? '100%' : '-100%' }) }}
+            variants={{ enter: dir => ({ x: dir > 0 ? '100%' : '-100%' }), center: { x: 0 }, exit: dir => ({ x: dir < 0 ? '100%' : '-100%', zIndex: -1 }) }}
             initial="enter" animate="center" exit="exit" transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-            style={{ position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, display: 'flex', flexDirection: 'column' }}>
+            style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             <section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" aria-label="Personal side" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}><Personal onWork={() => handleTabChange('work')} onServices={(filter = 'All') => { setServiceFilter(filter); handleTabChange('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></section>
           </motion.div>
         )}
