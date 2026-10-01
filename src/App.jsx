@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
+import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react';
 import { duration, ease, spring as springs } from './motion.js';
 import { projects } from './projects.js';
 import LivePreview, { initials } from './LivePreview.jsx';
@@ -14,13 +14,19 @@ const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', mi
 
 function CustomCursor() {
   const reduced = useReducedMotion();
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
+  const smoothX = useSpring(mouseX, { damping: 25, stiffness: 200, mass: 0.1 });
+  const smoothY = useSpring(mouseY, { damping: 25, stiffness: 200, mass: 0.1 });
   const [clicked, setClicked] = useState(false);
   const [hovered, setHovered] = useState(false);
   
   useEffect(() => {
     if (reduced || matchMedia('(pointer: coarse)').matches) return;
-    const move = e => setPosition({ x: e.clientX, y: e.clientY });
+    const move = e => {
+      mouseX.set(e.clientX - 10);
+      mouseY.set(e.clientY - 10);
+    };
     const down = () => setClicked(true);
     const up = () => setClicked(false);
     const checkHover = e => {
@@ -29,33 +35,33 @@ function CustomCursor() {
       else setHovered(false);
     };
     
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointermove', checkHover);
-    window.addEventListener('pointerdown', down);
-    window.addEventListener('pointerup', up);
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointermove', checkHover, { passive: true });
+    window.addEventListener('pointerdown', down, { passive: true });
+    window.addEventListener('pointerup', up, { passive: true });
     return () => {
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointermove', checkHover);
       window.removeEventListener('pointerdown', down);
       window.removeEventListener('pointerup', up);
     };
-  }, [reduced]);
+  }, [reduced, mouseX, mouseY]);
 
   if (reduced || matchMedia('(pointer: coarse)').matches) return null;
 
   return <motion.div className="custom-cursor" 
+    style={{
+      x: smoothX, y: smoothY,
+      position: 'fixed', top: 0, left: 0, width: 20, height: 20, borderRadius: '50%', 
+      pointerEvents: 'none', zIndex: 9999
+    }} 
     animate={{ 
-      x: position.x - 10, y: position.y - 10, 
       scale: clicked ? 0.8 : hovered ? 1.5 : 1,
       backgroundColor: hovered ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.8)',
       mixBlendMode: hovered ? 'difference' : 'normal',
       border: hovered ? '1px solid rgba(255, 255, 255, 0.5)' : 'none'
     }} 
     transition={{ type: 'spring', damping: 25, stiffness: 200, mass: 0.1 }}
-    style={{
-      position: 'fixed', top: 0, left: 0, width: 20, height: 20, borderRadius: '50%', 
-      pointerEvents: 'none', zIndex: 9999
-    }} 
   />;
 }
 
