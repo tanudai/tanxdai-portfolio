@@ -31,9 +31,3 @@
   --dur-base: .3s;
   --dur-hero: .52s;
 }
-
-@media (pointer: fine) {
-  body, button, a, [role="button"], [role="tab"], input, textarea, select {
-    cursor: none !important;
-  }
-}

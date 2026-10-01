@@ -12,59 +12,6 @@ import { BorderTrail, TextReveal, trackSpotlight, useMagnetic, useTilt } from '.
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 
-function CustomCursor() {
-  const reduced = useReducedMotion();
-  const mouseX = useMotionValue(-100);
-  const mouseY = useMotionValue(-100);
-  const smoothX = useSpring(mouseX, { damping: 25, stiffness: 200, mass: 0.1 });
-  const smoothY = useSpring(mouseY, { damping: 25, stiffness: 200, mass: 0.1 });
-  const [clicked, setClicked] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  
-  useEffect(() => {
-    if (reduced || matchMedia('(pointer: coarse)').matches) return;
-    const move = e => {
-      mouseX.set(e.clientX - 10);
-      mouseY.set(e.clientY - 10);
-    };
-    const down = () => setClicked(true);
-    const up = () => setClicked(false);
-    const checkHover = e => {
-      const target = e.target;
-      if (target.closest('button, a, input, [role="button"], [role="tab"]')) setHovered(true);
-      else setHovered(false);
-    };
-    
-    window.addEventListener('pointermove', move, { passive: true });
-    window.addEventListener('pointermove', checkHover, { passive: true });
-    window.addEventListener('pointerdown', down, { passive: true });
-    window.addEventListener('pointerup', up, { passive: true });
-    return () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointermove', checkHover);
-      window.removeEventListener('pointerdown', down);
-      window.removeEventListener('pointerup', up);
-    };
-  }, [reduced, mouseX, mouseY]);
-
-  if (reduced || matchMedia('(pointer: coarse)').matches) return null;
-
-  return <motion.div className="custom-cursor" 
-    style={{
-      x: smoothX, y: smoothY,
-      position: 'fixed', top: 0, left: 0, width: 20, height: 20, borderRadius: '50%', 
-      pointerEvents: 'none', zIndex: 9999
-    }} 
-    animate={{ 
-      scale: clicked ? 0.8 : hovered ? 1.5 : 1,
-      backgroundColor: hovered ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.8)',
-      mixBlendMode: hovered ? 'difference' : 'normal',
-      border: hovered ? '1px solid rgba(255, 255, 255, 0.5)' : 'none'
-    }} 
-    transition={{ type: 'spring', damping: 25, stiffness: 200, mass: 0.1 }}
-  />;
-}
-
 function ProjectPoster({ project, index, active }) {
   const info = useRef(null);
   const magnetic = useMagnetic();
@@ -232,7 +179,7 @@ export default function App() {
   }, [tab]);
   useEffect(() => { const timer = setInterval(() => setTime(formatTime()), 60000); return () => clearInterval(timer); }, []);
   useEffect(trackSpotlight, []);
-  return <><div className="ambient" aria-hidden="true" /><CustomCursor />
+  return <><div className="ambient" aria-hidden="true" />
     <header><a href="/" className="wordmark">tanxdai<span aria-hidden="true">®</span></a><StatusCapsule time={time} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></header>
     <div className="workspace-shell"><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { setTab(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
     <main data-active-view={tab}><section id="work-panel" role="tabpanel" aria-labelledby="work-tab" hidden={tab !== 'work'} aria-label="Selected work"><ProjectDeck enabled={tab === 'work'} /></section><section id="services-panel" role="tabpanel" aria-labelledby="services-tab" hidden={tab !== 'services'} aria-label="Services">{tab === 'services' && <Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} />}</section><section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" hidden={tab !== 'personal'} aria-label="Personal side"><Personal onWork={() => setTab('work')} onServices={(filter = 'All') => { setServiceFilter(filter); setTab('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></section></main></div>
