@@ -133,11 +133,21 @@ export default function Services({ onCall, initialFilter = 'All' }) {
   const landed = () => { dialog.current?.close(); opener.current?.focus(); };
   
   return <div className={`services-app ${shortPhone ? 'services-readable' : ''}`} ref={viewport} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} tabIndex={0} style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
-    <div className="services-heading"><div><span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1></div><p>Development, AI integrations, and technical advice.</p></div>
+    <div className="services-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div>
+        <span className="deck-eyebrow">SERVICES</span><h1>How I can help</h1>
+        <p>Development, AI integrations, and technical advice.</p>
+      </div>
+      <div className="deck-controls" style={{ display: 'flex', gap: '8px', padding: 0 }}>
+        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goToPage(page - 1)} disabled={page === 0} aria-label="Previous services" style={{ width: 38, height: 38, background: 'transparent', borderColor: 'transparent' }}><Icon name="arrowUp" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goToPage(page + 1)} disabled={page === pages - 1} aria-label="Next services" style={{ width: 38, height: 38, background: 'transparent', borderColor: 'transparent' }}><Icon name="arrowDown" /></motion.button>
+      </div>
+    </div>
     <div className="service-filters" aria-label="Filter services">{['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}</div>
-    <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+    <div style={{ position: 'relative', flex: 1, minHeight: 0, paddingBottom: '20px' }}>
       <AnimatePresence mode="wait" custom={direction}>
         <motion.div key={`${filter}-${page}`} custom={direction} className="service-grid"
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gridTemplateRows: 'repeat(2, minmax(0, 1fr))', height: '100%', position: 'absolute', inset: '0 0 20px 0' }}
           variants={{
             from: dir => ({ opacity: 0, y: dir * 50 }),
             shown: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.2, 0.8, 0.2, 1] } },
@@ -147,15 +157,6 @@ export default function Services({ onCall, initialFilter = 'All' }) {
           {filtered.slice(page * perPage, (page + 1) * perPage).map((service, i) => <ServiceTile key={service[1]} service={service} i={i} hovered={hovered} setHovered={setHovered} setSelected={setSelected} opener={opener} loadFilm={loadFilm} reducedMotion={reducedMotion} />)}
         </motion.div>
       </AnimatePresence>
-    </div>
-    <div className="deck-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 0 5px', marginTop: 'auto' }}>
-      <div className="deck-dots" aria-hidden="true" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {Array.from({ length: pages }).map((_, i) => <i key={i} className={i === page ? 'on' : ''} style={{ width: '6px', height: '6px', borderRadius: '50%', background: i === page ? '#b7efcf' : '#ffffff22' }} />)}
-      </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goToPage(page - 1)} disabled={page === 0} aria-label="Previous services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
-        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goToPage(page + 1)} disabled={page === pages - 1} aria-label="Next services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
-      </div>
     </div>
     <dialog ref={dialog} className="service-dialog" aria-label={selected ? selected[2] : 'Service'} onCancel={event => { event.preventDefault(); close(); }}>
       <AnimatePresence onExitComplete={landed}>
