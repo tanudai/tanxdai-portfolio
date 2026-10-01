@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import ServiceArt, { flowSteps } from './components/ServiceArt.jsx';
 import { duration, ease, spring } from './motion.js';
 import Icon from './Icons.jsx';
+import { triggerHaptic } from './lib/haptics.js';
 
 // Films load only when a service card opens, keeping them out of the initial bundle.
 const loadFilm = () => import('./film/FilmPlayer.jsx');
@@ -10,24 +11,24 @@ const FilmPlayer = lazy(loadFilm);
 
 const groups = ['AI & automation', 'Websites', 'Audits & advisory'];
 export const services = [
-  ['AI & automation', '01', 'Enquiry assistants', 'Make every enquiry easier to act on.', 'An assistant grounded in your approved business information, with a clear handoff to your team.', ['Business FAQ and knowledge setup', 'Lead capture and qualification', 'Human handoff and answer testing']],
-  ['AI & automation', '02', 'Quote preparation', 'From a loose brief to a useful draft.', 'Turn product requirements, quantities, and timelines into structured briefs and draft quotations.', ['Requirements capture', 'Draft quote workflow', 'Staff approval before sending']],
-  ['AI & automation', '03', 'Knowledge assistants', 'Your company’s knowledge, within reach.', 'Help your team find answers in approved documents, with sources and appropriate access controls.', ['Document preparation and search', 'Source-linked answers', 'Permissions and quality checks']],
-  ['AI & automation', '04', 'Document workflows', 'Less copying. More useful information.', 'Extract and organize information from invoices, forms, and PDFs, with review for uncertain results.', ['Structured data extraction', 'Review and correction steps', 'Export to your existing tools']],
-  ['AI & automation', '05', 'Support copilots', 'Give your team a better first draft.', 'Help support staff find policies, categorize requests, and draft consistent responses.', ['Ticket classification', 'Policy-grounded reply drafts', 'Escalation to a person']],
-  ['AI & automation', '06', 'CRM & follow-ups', 'Keep the next step clear.', 'Connect enquiries to your CRM and prepare useful summaries, assignments, and follow-up drafts.', ['Enquiry routing', 'Conversation summaries', 'Reviewable follow-up workflows']],
-  ['AI & automation', '07', 'Product discovery', 'Help buyers find the right fit.', 'Guide visitors through your catalog using specifications and requirements, with real product information.', ['Catalog and specification setup', 'Guided product matching', 'Sales-team handoff']],
-  ['AI & automation', '08', 'Content & reporting', 'Turn source material into useful drafts.', 'Create repeatable workflows for approved content and business summaries, with human review.', ['Reusable content workflows', 'Source-linked reporting', 'Approval before publication']],
-  ['Websites', '09', 'Custom websites', 'Built around your business.', 'A responsive website shaped around your audience, content, and enquiry journey.', ['Custom interface and development', 'Mobile and desktop layouts', 'Launch checks and handover']],
-  ['Websites', '10', 'WordPress development', 'Flexible content. Considered design.', 'Custom WordPress implementation with an editing experience your team can use.', ['Design and CMS implementation', 'Relevant plugin integrations', 'Editor training and handover']],
-  ['Websites', '11', 'AI feature integration', 'Give your existing product new abilities.', 'Add a focused AI workflow to your website or application, starting with a scoped pilot.', ['Use-case and data review', 'API and application integration', 'Testing and usage controls']],
-  ['Websites', '12', 'Website care', 'Keep the essentials working.', 'Ongoing technical care with an agreed scope, update process, and maintenance schedule.', ['Updates and backups', 'Form and uptime checks', 'Performance maintenance']],
-  ['Audits & advisory', '13', 'Website quality review', 'Know what to fix first.', 'A practical review of your website’s usability, reliability, performance, and technical SEO.', ['Mobile and key-flow review', 'Prioritized findings', 'Implementation roadmap']],
-  ['Audits & advisory', '14', 'Accessibility', 'Make the experience easier to use.', 'Review and remediate against an agreed WCAG target, combining manual checks with automated tools.', ['Keyboard, focus, and forms', 'Contrast and semantic structure', 'Documented fixes and retesting']],
-  ['Audits & advisory', '15', 'Privacy & GDPR readiness', 'Understand and improve data handling.', 'Technical privacy implementation and readiness support. Legal interpretation and sign-off stay with your legal adviser.', ['Tracker and form inventory', 'Consent and script controls', 'Retention and deletion workflows']],
-  ['Audits & advisory', '16', 'AI opportunity review', 'Choose a useful first step.', 'Identify a specific business workflow worth testing, its data needs, and a realistic pilot scope.', ['Workflow discovery', 'Cost and feasibility assessment', 'Pilot success criteria']],
-  ['Audits & advisory', '17', 'AI quality & care', 'Keep the system useful after launch.', 'Evaluate answers, failures, costs, and model changes against an agreed set of checks.', ['Evaluation examples and testing', 'Usage and failure monitoring', 'Scheduled improvements']],
-  ['Audits & advisory', '18', 'AI adoption & training', 'Help your team use AI thoughtfully.', 'Practical training and operating guidance tailored to your team’s workflows and data.', ['Role-specific workshops', 'Data handling and review rules', 'Repeatable working practices']],
+  ['AI & automation', '01', 'Enquiry assistants', 'Make every enquiry easier to act on.', 'An assistant grounded in your approved business information, with a clear handoff to your team.', ['Business FAQ and knowledge setup', 'Lead capture and qualification', 'Human handoff and answer testing'], '1–2 wks · Turnkey'],
+  ['AI & automation', '02', 'Quote preparation', 'From a loose brief to a useful draft.', 'Turn product requirements, quantities, and timelines into structured briefs and draft quotations.', ['Requirements capture', 'Draft quote workflow', 'Staff approval before sending'], '1–2 wks · Scoped'],
+  ['AI & automation', '03', 'Knowledge assistants', 'Your company’s knowledge, within reach.', 'Help your team find answers in approved documents, with sources and appropriate access controls.', ['Document preparation and search', 'Source-linked answers', 'Permissions and quality checks'], '2–3 wks · Pilot'],
+  ['AI & automation', '04', 'Document workflows', 'Less copying. More useful information.', 'Extract and organize information from invoices, forms, and PDFs, with review for uncertain results.', ['Structured data extraction', 'Review and correction steps', 'Export to your existing tools'], '1–2 wks · Scoped'],
+  ['AI & automation', '05', 'Support copilots', 'Give your team a better first draft.', 'Help support staff find policies, categorize requests, and draft consistent responses.', ['Ticket classification', 'Policy-grounded reply drafts', 'Escalation to a person'], '2–3 wks · Turnkey'],
+  ['AI & automation', '06', 'CRM & follow-ups', 'Keep the next step clear.', 'Connect enquiries to your CRM and prepare useful summaries, assignments, and follow-up drafts.', ['Enquiry routing', 'Conversation summaries', 'Reviewable follow-up workflows'], '1–2 wks · Integration'],
+  ['AI & automation', '07', 'Product discovery', 'Help buyers find the right fit.', 'Guide visitors through your catalog using specifications and requirements, with real product information.', ['Catalog and specification setup', 'Guided product matching', 'Sales-team handoff'], '2–3 wks · Pilot'],
+  ['AI & automation', '08', 'Content & reporting', 'Turn source material into useful drafts.', 'Create repeatable workflows for approved content and business summaries, with human review.', ['Reusable content workflows', 'Source-linked reporting', 'Approval before publication'], '1–2 wks · Scoped'],
+  ['Websites', '09', 'Custom websites', 'Built around your business.', 'A responsive website shaped around your audience, content, and enquiry journey.', ['Custom interface and development', 'Mobile and desktop layouts', 'Launch checks and handover'], '3–5 wks · Full build'],
+  ['Websites', '10', 'WordPress development', 'Flexible content. Considered design.', 'Custom WordPress implementation with an editing experience your team can use.', ['Design and CMS implementation', 'Relevant plugin integrations', 'Editor training and handover'], '2–4 wks · Turnkey'],
+  ['Websites', '11', 'AI feature integration', 'Give your existing product new abilities.', 'Add a focused AI workflow to your website or application, starting with a scoped pilot.', ['Use-case and data review', 'API and application integration', 'Testing and usage controls'], '1–3 wks · Sprint'],
+  ['Websites', '12', 'Website care', 'Keep the essentials working.', 'Ongoing technical care with an agreed scope, update process, and maintenance schedule.', ['Updates and backups', 'Form and uptime checks', 'Performance maintenance'], 'Monthly · Retainer'],
+  ['Audits & advisory', '13', 'Website quality review', 'Know what to fix first.', 'A practical review of your website’s usability, reliability, performance, and technical SEO.', ['Mobile and key-flow review', 'Prioritized findings', 'Implementation roadmap'], '3–5 days · Audit'],
+  ['Audits & advisory', '14', 'Accessibility', 'Make the experience easier to use.', 'Review and remediate against an agreed WCAG target, combining manual checks with automated tools.', ['Keyboard, focus, and forms', 'Contrast and semantic structure', 'Documented fixes and retesting'], '1–2 wks · Remediation'],
+  ['Audits & advisory', '15', 'Privacy & GDPR readiness', 'Understand and improve data handling.', 'Technical privacy implementation and readiness support. Legal interpretation and sign-off stay with your legal adviser.', ['Tracker and form inventory', 'Consent and script controls', 'Retention and deletion workflows'], '1 wk · Review'],
+  ['Audits & advisory', '16', 'AI opportunity review', 'Choose a useful first step.', 'Identify a specific business workflow worth testing, its data needs, and a realistic pilot scope.', ['Workflow discovery', 'Cost and feasibility assessment', 'Pilot success criteria'], '1 wk · Discovery'],
+  ['Audits & advisory', '17', 'AI quality & care', 'Keep the system useful after launch.', 'Evaluate answers, failures, costs, and model changes against an agreed set of checks.', ['Evaluation examples and testing', 'Usage and failure monitoring', 'Scheduled improvements'], 'Ongoing · Retainer'],
+  ['Audits & advisory', '18', 'AI adoption & training', 'Help your team use AI thoughtfully.', 'Practical training and operating guidance tailored to your team’s workflows and data.', ['Role-specific workshops', 'Data handling and review rules', 'Repeatable working practices'], '1–2 wks · Workshops'],
 ];
 
 import { useMagnetic, useTilt } from './components/motion-kit.jsx';
@@ -55,12 +56,12 @@ function ServiceTile({ service, i, hovered, setHovered, setSelected, opener, loa
     onPointerMove={handlePointerMove}
     onPointerLeave={handlePointerLeave}
     transition={spring.sheet} 
-    onClick={event => { opener.current = event.currentTarget; setSelected(service); }}>
+    onClick={event => { triggerHaptic('medium'); opener.current = event.currentTarget; setSelected(service); }}>
     <span className="service-stage">
       <ServiceArt id={service[1]} active={hovered === service[1]} delay={0.1 + i * 0.07} />
       <motion.span className="service-open" {...magnetic} onPointerDown={e => e.stopPropagation()}><Icon name="arrowUpRight" /></motion.span>
     </span>
-    <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span></span><h2>{service[2]}</h2><p>{service[3]}</p><span className="service-flow" style={{ marginTop: 'auto', paddingTop: '14px', width: '100%', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>{flowSteps(service[1]).map((label, n) => <span key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{n > 0 && <Icon name="arrowRight" />}{label}</span>)}</span>
+    <span className="service-category"><b>{service[1]}</b><span className="service-group"> · {service[0]}</span>{service[6] && <span className="service-scope-pill">{service[6]}</span>}</span><h2>{service[2]}</h2><p>{service[3]}</p><span className="service-flow">{flowSteps(service[1]).map((label, n) => <span key={label} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>{n > 0 && <Icon name="arrowRight" />}{label}</span>)}</span>
   </motion.button>;
 }
 
@@ -141,11 +142,11 @@ export default function Services({ onCall, initialFilter = 'All' }) {
     </div>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
       <div className="service-filters" aria-label="Filter services" style={{ marginBottom: 0 }}>
-        {['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { setFilter(group); setPage(0); }}>{group}</button>)}
+        {['All', ...groups].map(group => <button key={group} aria-pressed={filter === group} onClick={() => { triggerHaptic('light'); setFilter(group); setPage(0); }}>{group}</button>)}
       </div>
       <div className="deck-controls" style={{ display: 'flex', gap: '8px', padding: 0 }}>
-        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goToPage(page - 1)} disabled={page === 0} aria-label="Previous services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
-        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goToPage(page + 1)} disabled={page === pages - 1} aria-label="Next services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => { triggerHaptic('light'); goToPage(page - 1); }} disabled={page === 0} aria-label="Previous services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => { triggerHaptic('light'); goToPage(page + 1); }} disabled={page === pages - 1} aria-label="Next services" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
       </div>
     </div>
     <div style={{ position: 'relative', flex: 1, minHeight: 0, paddingBottom: '20px' }}>
@@ -171,7 +172,7 @@ export default function Services({ onCall, initialFilter = 'All' }) {
           <motion.div className="service-expanded-body" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { delay: 0.14, duration: duration.base, ease: ease.enter } }} exit={{ opacity: 0, transition: { duration: duration.quick, ease: ease.exit } }}>
             <button className="service-close" aria-label="Close service" onClick={close}><Icon name="close" /></button>
             <div className="service-film"><Suspense fallback={<div className="service-film-loading" />}><FilmPlayer id={selected[1]} startDelay={550} /></Suspense></div>
-            <div className="service-info"><span className="service-category">{selected[0]} / {selected[1]}</span><h2>{selected[2]}</h2><p className="service-description">{selected[4]}</p><span className="goal-label">WHAT WE CAN WORK ON</span><ul>{selected[5].map(item => <li key={item}>{item}</li>)}</ul><div className="service-call"><span>Tell me what you need.<br />We’ll discuss scope and next steps.</span><button className="visit-website" onClick={() => { const name = selected[2]; close(); onCall(name); }}>Get on a call <Icon name="arrowUpRight" /></button></div></div>
+            <div className="service-info"><span className="service-category">{selected[0]} / {selected[1]}{selected[6] && <span className="service-scope-pill" style={{ marginLeft: 8 }}>{selected[6]}</span>}</span><h2>{selected[2]}</h2><p className="service-description">{selected[4]}</p><span className="goal-label">WHAT WE CAN WORK ON</span><ul>{selected[5].map(item => <li key={item}>{item}</li>)}</ul><div className="service-call"><span>Tell me what you need.<br />We’ll discuss scope and next steps.</span><button className="visit-website" onClick={() => { triggerHaptic('success'); const name = selected[2]; close(); onCall(name); }}>Get on a call <Icon name="arrowUpRight" /></button></div></div>
           </motion.div>
         </motion.div>}
       </AnimatePresence>

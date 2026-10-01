@@ -85,7 +85,7 @@ export default function TerminalWidget({ compact = false }) {
   ];
 
   return (
-    <div className="crt-terminal-container">
+    <div className="crt-terminal-container" data-decorative="true">
       <div className="crt-screen">
         <div className="crt-scanlines" aria-hidden="true" />
         

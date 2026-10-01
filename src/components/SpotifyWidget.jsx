@@ -153,7 +153,7 @@ export default function SpotifyWidget({ compact = false }) {
   };
 
   if (compact) return (
-    <div className={`mini-vinyl-bar ${isPlaying ? 'is-playing' : ''}`}>
+    <div className={`mini-vinyl-bar ${isPlaying ? 'is-playing' : ''}`} data-decorative="true">
       <audio
         ref={audioRef}
         src={current.src}
@@ -237,7 +237,7 @@ export default function SpotifyWidget({ compact = false }) {
   );
 
   return (
-    <div className={`spotify-card ${isPlaying ? 'is-playing' : ''}`}>
+    <div className={`spotify-card ${isPlaying ? 'is-playing' : ''}`} data-decorative="true">
       {/* Hidden Native Audio Element */}
       <audio
         ref={audioRef}

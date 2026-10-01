@@ -13,6 +13,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { Plate20KG, HexDumbbell, Kettlebell24KG, OlympicClamp, ShakerBottle, SteelFlask, HeavyGripper, ChalkBlock, ResistanceBand, JumpRope, FoamRoller, GymTowel } from './components/GymIcons.jsx';
 import TerminalWidget from './components/TerminalWidget.jsx';
 import SpotifyWidget from './components/SpotifyWidget.jsx';
+import { triggerHaptic } from './lib/haptics.js';
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 
@@ -25,17 +26,29 @@ function ProjectPoster({ project, index, active, imgY }) {
     const from = event.currentTarget.getBoundingClientRect(), box = dialog.getBoundingClientRect();
     dialog.style.transformOrigin = `${from.left + from.width / 2 - box.left}px ${from.top + from.height / 2 - box.top}px`;
   };
-  const facts = [['My contribution', project.roleNote || 'Custom website development.'], ['Build approach', project.buildType], ['Build time', project.duration], ['Engagement', project.engagement]].filter(([, detail]) => detail);
+  const facts = [
+    ['Business impact', project.metric],
+    ['My contribution', project.roleNote || 'Custom website development.'],
+    ['Build approach', project.buildType],
+    ['Build time', project.duration],
+    ['Engagement', project.engagement],
+  ].filter(([, detail]) => detail);
   return <div className={`project-poster live-poster spotlight theme-${index % 4} ${active ? 'is-active' : ''}`}>
-    <div className="poster-top"><span>{project.type}</span><span className="live-badge"><i aria-hidden="true" />Live website</span></div>
+    <div className="poster-top">
+      <span>{project.type}</span>
+      <div className="poster-top-badges">
+        {project.metric && <span className="poster-metric-badge">{project.metric}</span>}
+        <span className="live-badge"><i aria-hidden="true" />Live website</span>
+      </div>
+    </div>
     {active && <BorderTrail radius={13} size={220} />}
     <LivePreview project={project} imgY={imgY} />
     <div className="reel-caption"><span className="goal-label">THE DEVELOPMENT GOAL</span><TextReveal text={project.goal} play={active} delay={0.12} />
-      <div className="poster-delivered"><b>Delivered</b> {project.buildType}{project.result && <><span aria-hidden="true"> · </span><b>Result</b> {project.result}</>}</div>
+      <div className="poster-delivered"><b>Delivered</b> {project.buildType}{project.metric && <><span aria-hidden="true"> · </span><b>Impact</b> {project.metric}</>}{project.result && <><span aria-hidden="true"> · </span><b>Result</b> {project.result}</>}</div>
       {project.stack && <ul className="stack-chips" aria-label="Technology">{project.stack.split(' · ').map((tech, i) => <li key={tech} style={{ '--i': i }}>{tech}</li>)}</ul>}
       <div className="project-actions" onPointerDown={event => event.stopPropagation()}>
-        <button className="project-info-button" aria-label={`About ${project.name}`} onClick={openInfo}><Icon name="info" /> <span>Project info</span></button>
-        <motion.a className="visit-website" href={project.liveUrl} target="_blank" rel="noopener noreferrer" {...magnetic}>Visit website <Icon name="arrowUpRight" /></motion.a>
+        <button className="project-info-button" aria-label={`About ${project.name}`} onClick={e => { triggerHaptic('light'); openInfo(e); }}><Icon name="info" /> <span>Project info</span></button>
+        <motion.a className="visit-website" href={project.liveUrl} target="_blank" rel="noopener noreferrer" onClick={() => triggerHaptic('medium')} {...magnetic}>Visit website <Icon name="arrowUpRight" /></motion.a>
       </div>
     </div>
     <dialog className="project-dialog" ref={info} onPointerDown={event => event.stopPropagation()} onClick={event => { if (event.target === info.current) info.current.close(); }}>
@@ -159,8 +172,8 @@ function ProjectDeck({ enabled }) {
         </AnimatePresence>
       </div>
       <div className="deck-controls" style={{ display: 'flex', gap: '8px', padding: 0 }}>
-        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(selected.current - 1)} aria-label="Previous project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
-        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(selected.current + 1)} aria-label="Next project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => { triggerHaptic('light'); goTo(selected.current - 1); }} aria-label="Previous project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
+        <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => { triggerHaptic('light'); goTo(selected.current + 1); }} aria-label="Next project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
       </div>
     </div>
     <div id="projects" ref={viewport} tabIndex={0} role="region" aria-roledescription="carousel" aria-label="Projects. Swipe up or down, or use arrow keys.">
@@ -254,13 +267,14 @@ function Personal({ onWork, onServices, onContact }) {
             <TerminalWidget />
           </article>
 
-          <article className="bento-tools">
+          <article className="bento-tools" data-decorative="true">
             <div className="bento-card-top">
               <span className="bento-label">TECH TOOLKIT</span>
               <button
                 type="button"
                 className="phys-shake-btn"
-                onClick={() => toolsRef.current?.shake?.()}
+                data-decorative="true"
+                onClick={() => { triggerHaptic('shake'); toolsRef.current?.shake?.(); }}
                 aria-label="Shake Tech Toolkit"
                 title="Shake & toss blocks"
               >
@@ -270,13 +284,14 @@ function Personal({ onWork, onServices, onContact }) {
             <PhysicsPile ref={toolsRef} label="Interactive toolkit" variant="tile" items={playgroundItems} />
           </article>
 
-          <article className="bento-gym">
+          <article className="bento-gym" data-decorative="true">
             <div className="bento-card-top">
               <span className="bento-label">IRON & DISCIPLINE</span>
               <button
                 type="button"
                 className="phys-shake-btn gym-shake-btn"
-                onClick={() => gymRef.current?.shake?.()}
+                data-decorative="true"
+                onClick={() => { triggerHaptic('shake'); gymRef.current?.shake?.(); }}
                 aria-label="Shake Iron Gym"
                 title="Shake iron weights"
               >
@@ -286,7 +301,7 @@ function Personal({ onWork, onServices, onContact }) {
             <PhysicsPile ref={gymRef} label="Gym playground" variant="gym" items={gymItems} />
           </article>
 
-          <article className="bento-stats">
+          <article className="bento-stats" data-decorative="true">
             <div className="bento-card-top">
               <span className="bento-label">AT A GLANCE</span>
               <div className="availability-badge">
@@ -345,7 +360,7 @@ function Personal({ onWork, onServices, onContact }) {
                   type="button"
                   className={`phys-pill-btn ${activePhysics === 'tools' ? 'active' : ''}`}
                   aria-pressed={activePhysics === 'tools'}
-                  onClick={() => setActivePhysics('tools')}
+                  onClick={() => { triggerHaptic('selection'); setActivePhysics('tools'); }}
                 >
                   <span>⚡ Code</span>
                 </button>
@@ -353,7 +368,7 @@ function Personal({ onWork, onServices, onContact }) {
                   type="button"
                   className={`phys-pill-btn ${activePhysics === 'gym' ? 'active' : ''}`}
                   aria-pressed={activePhysics === 'gym'}
-                  onClick={() => setActivePhysics('gym')}
+                  onClick={() => { triggerHaptic('selection'); setActivePhysics('gym'); }}
                 >
                   <span>🏋️ Iron</span>
                 </button>
@@ -361,7 +376,7 @@ function Personal({ onWork, onServices, onContact }) {
               <button
                 type="button"
                 className="phone-shake-btn"
-                onClick={() => (activePhysics === 'tools' ? toolsRef : gymRef).current?.shake?.()}
+                onClick={() => { triggerHaptic('shake'); (activePhysics === 'tools' ? toolsRef : gymRef).current?.shake?.(); }}
                 aria-label="Shake physics playground"
                 title="Shake items"
               >
@@ -392,6 +407,7 @@ export default function App() {
   
   const handleTabChange = (newTab) => {
     if (newTab === tab) return;
+    triggerHaptic('selection');
     const tabs = ['work', 'services', 'personal'];
     setTabDirection(tabs.indexOf(newTab) > tabs.indexOf(tab) ? 1 : -1);
     setTab(newTab);
@@ -429,16 +445,16 @@ export default function App() {
     touchX.current = null;
   };
   return <><div className="ambient" aria-hidden="true" />
-    <header><a href="/" className="wordmark">tanxdai<span aria-hidden="true">®</span></a><StatusCapsule time={time} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></header>
+    <header><a href="/" className="wordmark">tanxdai<span aria-hidden="true">®</span></a><StatusCapsule time={time} onContact={() => { triggerHaptic('medium'); setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { triggerHaptic('medium'); setCallTopic(''); contact.current.showModal(); }} /></header>
     <div className="workspace-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} onTouchCancel={() => { touchX.current = null; }}><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : Math.max(0, Math.min(tabs.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1))); if (next === index) return; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { handleTabChange(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
     <main>
       <ErrorBoundary resetKey={tab}>
         <section id="work-panel" role="tabpanel" aria-labelledby="work-tab" hidden={tab !== 'work'} aria-label="Selected work"><ProjectDeck enabled={tab === 'work'} /></section>
         <section id="services-panel" role="tabpanel" aria-labelledby="services-tab" hidden={tab !== 'services'} aria-label="Services">{tab === 'services' && <Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} />}</section>
-        <section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" hidden={tab !== 'personal'} aria-label="Personal side">{tab === 'personal' && <Personal onWork={() => handleTabChange('work')} onServices={(filter = 'All') => { setServiceFilter(filter); handleTabChange('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} />}</section>
+        <section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" hidden={tab !== 'personal'} aria-label="Personal side">{tab === 'personal' && <Personal onWork={() => handleTabChange('work')} onServices={(filter = 'All') => { setServiceFilter(filter); handleTabChange('services'); }} onContact={() => { triggerHaptic('medium'); setCallTopic(''); contact.current.showModal(); }} />}</section>
       </ErrorBoundary>
     </main></div>
     <footer><span>TANXDAI © 2026</span><span>A LITTLE INTENTION. A LITTLE PLAY.</span></footer>
-    <dialog ref={contact} id="contact-dialog"><button id="close-contact" aria-label="Close contact" onClick={() => contact.current.close()}><Icon name="close" /></button><span className="eyebrow">CONTACT</span><h2>Discuss your<br />project.</h2><p>{callTopic ? `Let’s talk about ${callTopic.toLowerCase()}.` : 'Let’s talk about your next project.'}</p><div className="contact-dialog-actions"><ContactActions key={callTopic} topic={callTopic} /></div><button id="back-work" onClick={() => contact.current.close()}>Back to exploring <Icon name="arrowUpRight" /></button></dialog>
+    <dialog ref={contact} id="contact-dialog"><button id="close-contact" aria-label="Close contact" onClick={() => { triggerHaptic('light'); contact.current.close(); }}><Icon name="close" /></button><span className="eyebrow">CONTACT</span><h2>Discuss your<br />project.</h2><p>{callTopic ? `Let’s talk about ${callTopic.toLowerCase()}.` : 'Let’s talk about your next project.'}</p><div className="contact-dialog-actions"><ContactActions key={callTopic} topic={callTopic} /></div><button id="back-work" onClick={() => { triggerHaptic('light'); contact.current.close(); }}>Back to exploring <Icon name="arrowUpRight" /></button></dialog>
   </>;
 }

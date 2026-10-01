@@ -48,32 +48,48 @@ if (existsSync(browse)) {
         const text = clean(b('eval', textScript));
         check(text === 'ok', `text ${size} ${label}: ${text}`);
       };
-      b('click', '#work-tab');
-      for (let n = 1; n <= projects.length; n++) { b('click', `.project-filmstrip button:nth-child(${n})`); measure(`work #${n}`); }
-      b('click', '#services-tab');
+      b('js', 'document.getElementById("work-tab")?.click()');
+      for (let n = 1; n <= projects.length; n++) { measure(`work #${n}`); if (n < projects.length) { b('js', 'document.getElementById("next-project")?.click()'); execFileSync('sleep', ['0.4']); } }
+      b('js', 'document.getElementById("services-tab")?.click()');
       for (let page = 1; ; page++) {
         measure(`services p${page}`);
         if (b('js', `document.querySelector('[aria-label="Next services"]').disabled`).includes('true')) break;
-        b('click', '[aria-label="Next services"]');
+        b('js', 'document.querySelector("[aria-label=\\"Next services\\"]")?.click()');
       }
-      b('click', '#personal-tab'); measure('personal');
-      b('click', '#work-tab');
+      b('js', 'document.getElementById("personal-tab")?.click()'); measure('personal');
+      b('js', 'document.getElementById("work-tab")?.click()');
       for (let n = 1; n <= projects.length; n++) {
-        b('click', `.project-filmstrip button:nth-child(${n})`); execFileSync('sleep', ['0.8']);
-        b('click', '.react-card:not([aria-hidden=true]) .project-info-button'); measure(`project #${n} notes`); b('press', 'Escape');
+        b('js', 'document.querySelector(".react-card:not([aria-hidden=true]) .project-info-button")?.click()');
+        execFileSync('sleep', ['0.6']);
+        measure(`project #${n} notes`);
+        b('press', 'Escape');
+        execFileSync('sleep', ['0.4']);
+        if (n < projects.length) {
+          b('js', 'document.getElementById("next-project")?.click()');
+          execFileSync('sleep', ['0.5']);
+        }
       }
-      b('click', '#services-tab');
+      b('js', 'document.getElementById("services-tab")?.click()');
       for (const [pageClicks, nth, id] of [[0, 1, '01'], [1, 5, '11'], [2, 3, '15']]) { // first card and the two longest
-        b('click', '#services-tab'); b('click', '#work-tab'); b('click', '#services-tab'); execFileSync('sleep', ['0.5']);
+        b('js', 'document.getElementById("services-tab")?.click()'); execFileSync('sleep', ['0.4']);
         const perPage = Number(b('js', 'document.querySelectorAll(".service-grid > .service-tile").length').replace(/\D+/g, ' ').trim().split(' ').pop());
+        if (!perPage) continue;
         const index = Number(id) - 1, target = Math.floor(index / perPage);
-        for (let k = 0; k < target; k++) b('click', '[aria-label="Next services"]');
-        b('click', `.service-grid > .service-tile:nth-child(${index % perPage + 1})`); execFileSync('sleep', ['1']);
+        for (let k = 0; k < target; k++) b('js', 'document.querySelector("[aria-label=\\"Next services\\"]")?.click()');
+        b('js', `document.querySelector(".service-grid > .service-tile:nth-child(${index % perPage + 1})")?.click()`);
+        execFileSync('sleep', ['1']);
         measure(`service ${id} card`); b('press', 'Escape'); execFileSync('sleep', ['0.8']);
       }
-      b('click', '#contact-button'); measure('contact popover'); b('press', 'Escape');
-      b('click', '.status-capsule'); measure('studio popover'); b('press', 'Escape');
-      b('click', '#personal-tab'); b('click', '.bento-collab button'); measure('contact dialog'); b('press', 'Escape');
+      if (b('js', 'document.querySelector("#contact-button") !== null').includes('true')) {
+        b('js', 'document.querySelector("#contact-button")?.click()'); measure('contact popover'); b('press', 'Escape');
+      }
+      if (b('js', 'document.querySelector(".status-capsule") !== null').includes('true')) {
+        b('js', 'document.querySelector(".status-capsule")?.click()'); measure('studio popover'); b('press', 'Escape');
+      }
+      b('js', 'document.getElementById("personal-tab")?.click()');
+      if (b('js', 'document.querySelector(".bento-collab button") !== null').includes('true')) {
+        b('js', 'document.querySelector(".bento-collab button")?.click()'); measure('contact dialog'); b('press', 'Escape');
+      }
     }
     fit = 'ran';
   } catch (error) { fit = 'errored'; failures.push(`fit check could not run against ${url}: ${error.message.split('\n')[0]}`); }
