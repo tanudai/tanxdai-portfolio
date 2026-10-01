@@ -105,8 +105,8 @@ function ProjectDeck({ enabled }) {
   useEffect(() => {
     if (!enabled) return;
     function keydown(event) {
-      if (document.querySelector('dialog[open], :popover-open') || event.target.closest?.('input, textarea, select, [contenteditable="true"]')) return;
-      const directions = { ArrowDown: 1, ArrowRight: 1, PageDown: 1, ArrowUp: -1, ArrowLeft: -1, PageUp: -1 };
+      if (document.querySelector('dialog[open], :popover-open') || event.target.closest?.('input, textarea, select, [contenteditable="true"]') || event.target.closest?.('[role=tablist]')) return;
+      const directions = { ArrowDown: 1, PageDown: 1, ArrowUp: -1, PageUp: -1 };
       if (event.key in directions) { event.preventDefault(); goTo(selected.current + directions[event.key]); }
       else if (event.code === 'Space' && !event.target.closest?.('button, a')) { event.preventDefault(); goTo(selected.current + (event.shiftKey ? -1 : 1)); }
       else if (event.key === 'Home' || event.key === 'End') { event.preventDefault(); show(event.key === 'Home' ? 0 : projects.length - 1); }
@@ -221,22 +221,22 @@ export default function App() {
   return <><div className="ambient" aria-hidden="true" />
     <header><a href="/" className="wordmark">tanxdai<span aria-hidden="true">®</span></a><StatusCapsule time={time} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /><ContactDock onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></header>
     <div className="workspace-shell" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}><nav ref={tabBar} className="top-tabs" role="tablist" aria-label="Portfolio sections" onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); const tabs = [...event.currentTarget.querySelectorAll('[role=tab]')]; const index = tabs.indexOf(document.activeElement); const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : Math.max(0, Math.min(tabs.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1))); if (next === index) return; tabs[next].focus(); tabs[next].click(); }}>{surface && <motion.span className="active-tab-surface" aria-hidden="true" initial={false} animate={{ x: surface.x, width: surface.width }} style={{ top: surface.y, height: surface.height }} transition={springs.ui} />}{[['work', 'Selected work', String(projects.length).padStart(2, '0')], ['services', 'Services', String(services.length)], ['personal', 'Personal', null]].map(([key, title, count]) => <button key={key} className={tab === key ? 'active' : ''} data-tab={key} role="tab" id={`${key}-tab`} aria-controls={`${key}-panel`} aria-selected={tab === key} tabIndex={tab === key ? 0 : -1} onClick={() => { handleTabChange(key); setServiceFilter('All'); window.scrollTo({ top: 0, behavior: 'instant' }); }}><svg className="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">{key === 'work' ? <path d="M3 7h7l2-3h9v16H3z" /> : key === 'services' ? <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></> : <><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0116 0v2"/></>}</svg><span>{title}</span>{count && <small>{count}</small>}</button>)}</nav>
-    <main style={{ position: 'relative', overflow: 'hidden' }}>
-      <motion.div
-        animate={{ x: tab === 'work' ? '0%' : tab === 'services' ? '-33.333%' : '-66.666%' }}
-        transition={{ type: 'spring', stiffness: 350, damping: 35 }}
-        style={{ display: 'flex', width: '300%', height: '100%' }}
-      >
-        <div className="sliding-tab" style={{ flex: '0 0 calc(100% / 3)', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <section id="work-panel" role="tabpanel" aria-labelledby="work-tab" aria-label="Selected work" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><ProjectDeck enabled={tab === 'work'} /></section>
-        </div>
-        <div className="sliding-tab" style={{ flex: '0 0 calc(100% / 3)', height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <section id="services-panel" role="tabpanel" aria-labelledby="services-tab" aria-label="Services" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} /></section>
-        </div>
-        <div className="sliding-tab" style={{ flex: '0 0 calc(100% / 3)', height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-          <section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" aria-label="Personal side" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}><Personal onWork={() => handleTabChange('work')} onServices={(filter = 'All') => { setServiceFilter(filter); handleTabChange('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></section>
-        </div>
-      </motion.div>
+    <main style={{ position: 'relative', overflow: 'hidden', flex: 1 }}>
+      {[
+        ['work', <section id="work-panel" role="tabpanel" aria-labelledby="work-tab" aria-label="Selected work" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}><ProjectDeck enabled={tab === 'work'} /></section>],
+        ['services', <section id="services-panel" role="tabpanel" aria-labelledby="services-tab" aria-label="Services" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}><Services initialFilter={serviceFilter} onCall={name => { setCallTopic(name); contact.current.showModal(); }} /></section>],
+        ['personal', <section id="personal-panel" role="tabpanel" aria-labelledby="personal-tab" aria-label="Personal side" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}><Personal onWork={() => handleTabChange('work')} onServices={(filter = 'All') => { setServiceFilter(filter); handleTabChange('services'); }} onContact={() => { setCallTopic(''); contact.current.showModal(); }} /></section>]
+      ].map(([key, content], i) => {
+        const tabOrder = ['work', 'services', 'personal'];
+        const offset = (i - tabOrder.indexOf(tab)) * 100;
+        return <motion.div key={key} className="sliding-tab"
+          animate={{ x: `${offset}%` }}
+          transition={{ type: 'spring', stiffness: 350, damping: 35 }}
+          style={{ position: 'absolute', inset: 0, willChange: 'transform' }}
+          aria-hidden={tab !== key}
+          inert={tab !== key ? '' : undefined}
+        >{content}</motion.div>;
+      })}
     </main></div>
     <footer><span>TANXDAI © 2026</span><span>A LITTLE INTENTION. A LITTLE PLAY.</span></footer>
     <dialog ref={contact} id="contact-dialog"><button id="close-contact" aria-label="Close contact" onClick={() => contact.current.close()}><Icon name="close" /></button><span className="eyebrow">CONTACT</span><h2>Discuss your<br />project.</h2><p>{callTopic ? `Let's talk about ${callTopic.toLowerCase()}.` : 'Let's talk about your next project.'}</p><div className="contact-dialog-actions"><ContactActions key={callTopic} topic={callTopic} /></div><button id="back-work" onClick={() => contact.current.close()}>Back to exploring <Icon name="arrowUpRight" /></button></dialog>
