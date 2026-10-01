@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react';
+import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react';
 import { duration, ease, spring as springs } from './motion.js';
 import { projects } from './projects.js';
 import LivePreview, { initials } from './LivePreview.jsx';
@@ -12,7 +12,7 @@ import { BorderTrail, TextReveal, trackSpotlight, useMagnetic, useTilt } from '.
 
 const formatTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' });
 
-function ProjectPoster({ project, index, active }) {
+function ProjectPoster({ project, index, active, imgY }) {
   const info = useRef(null);
   const magnetic = useMagnetic();
   const openInfo = event => {
@@ -25,7 +25,7 @@ function ProjectPoster({ project, index, active }) {
   return <div className={`project-poster live-poster spotlight theme-${index % 4} ${active ? 'is-active' : ''}`}>
     <div className="poster-top"><span>{project.type}</span><span className="live-badge"><i aria-hidden="true" />Live website</span></div>
     {active && <BorderTrail radius={13} size={220} />}
-    <LivePreview project={project} />
+    <LivePreview project={project} imgY={imgY} />
     <div className="reel-caption"><span className="goal-label">THE DEVELOPMENT GOAL</span><TextReveal text={project.goal} play={active} delay={0.12} />
       <div className="poster-delivered"><b>Delivered</b> {project.buildType}{project.result && <><span aria-hidden="true"> · </span><b>Result</b> {project.result}</>}</div>
       {project.stack && <ul className="stack-chips" aria-label="Technology">{project.stack.split(' · ').map((tech, i) => <li key={tech} style={{ '--i': i }}>{tech}</li>)}</ul>}
@@ -47,6 +47,23 @@ function ProjectPoster({ project, index, active }) {
 // Endless deck helpers: the project shown at an unbounded position, and the slot a card takes so it sits nearest that position.
 const wrap = position => ((position % projects.length) + projects.length) % projects.length;
 const slotFor = (i, position) => { const n = projects.length, half = Math.floor(n / 2); return position + ((i - wrap(position) + n + half) % n) - half; };
+
+function ProjectCard({ project, i, index, position, y, step, height }) {
+  const yActive = -(i * step);
+  const yNextActive = -((i + 1) * step);
+  
+  const scale = useTransform(y, [yActive + step, yActive, yNextActive], [1, 1, 0.92]);
+  const filter = useTransform(y, [yActive + step, yActive, yNextActive], ['brightness(1)', 'brightness(1)', 'brightness(0.5)']);
+  const imgY = useTransform(y, [yActive + step, yActive, yNextActive], [80, 0, -80]);
+  
+  const slotFor = (i, p) => i === 0 ? 0 : i <= p ? i - 1 : i;
+
+  return <motion.article className={`react-card theme-${i % 4}`}
+    style={{ top: slotFor(i, position) * step, height, scale, filter }} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${projects.length}: ${project.name}`}
+    aria-hidden={i !== index} inert={i !== index}>
+    <ProjectPoster project={project} index={i} active={i === index} imgY={imgY} />
+  </motion.article>;
+}
 
 function ProjectDeck({ enabled }) {
   const [index, setIndex] = useState(0);
@@ -136,16 +153,12 @@ function ProjectDeck({ enabled }) {
         dragConstraints={{ top: -(position + 1) * step, bottom: -(position - 1) * step }} dragElastic={0.08}
         onDragStart={() => running.current?.stop()} onDragEnd={finishDrag}
         onPointerCancel={() => goTo(selected.current)}>
-        {projects.map((project, i) => <article key={project.name} className={`react-card theme-${i % 4}`}
-          style={{ top: slotFor(i, position) * step, height }} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${projects.length}: ${project.name}`}
-          aria-hidden={i !== index} inert={i !== index}>
-          <ProjectPoster project={project} index={i} active={i === index} />
-        </article>)}
+        {projects.map((project, i) => <ProjectCard key={project.name} project={project} i={i} index={index} position={position} y={y} step={step} height={height} />)}
       </motion.div>
     </div>
-    <div className="deck-controls"><motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(selected.current - 1)} aria-label="Previous project"><Icon name="arrowUp" /></motion.button>
-      <div className="project-selector"><div className="project-filmstrip" aria-label="Choose a project">{projects.map((project, i) => <button key={project.name} aria-label={`Show ${project.name}`} aria-pressed={i === index} title={project.name} onClick={() => show(i)}>{project.image ? <img src={project.image} alt="" /> : <b className="thumb-mono" aria-hidden="true">{initials(project.name)}</b>}</button>)}</div><div className="deck-dots" aria-hidden="true">{projects.map((project, i) => <i key={project.name} className={i === index ? 'on' : ''} />)}</div><span id="deck-count" className="sr-only" aria-live="polite">{projects[index].name}</span><small>SWIPE TO EXPLORE</small></div>
-      <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(selected.current + 1)} aria-label="Next project"><Icon name="arrowDown" /></motion.button>
+    <div className="deck-controls" style={{ position: 'absolute', right: '30px', top: '50%', transform: 'translateY(-50%)', flexDirection: 'column', padding: 0, gap: '15px', zIndex: 50, pointerEvents: 'auto' }}>
+      <motion.button whileTap={{ scale: 0.9 }} id="previous-project" onClick={() => goTo(selected.current - 1)} aria-label="Previous project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowUp" /></motion.button>
+      <motion.button whileTap={{ scale: 0.9 }} id="next-project" onClick={() => goTo(selected.current + 1)} aria-label="Next project" style={{ width: 44, height: 44, background: '#151d29' }}><Icon name="arrowDown" /></motion.button>
     </div>
   </>;
 }
